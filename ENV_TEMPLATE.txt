@@ -1,0 +1,12 @@
+# Supabase Configuration
+# Bu dosyayı .env.local olarak kopyalayın ve kendi bilgilerinizi girin
+
+# Supabase Project URL
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+
+# Supabase Anon Key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Supabase Service Role Key (sadece sunucu tarafında kullanılmalı)
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
