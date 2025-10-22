@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Footer from "@/components/Footer";
 import { Phone } from "@/types";
-import { mockPhones } from "@/lib/supabase";
+import { getPhones, subscribeToPhones } from "@/lib/supabase";
 import { calculatePrices, formatPrice } from "@/lib/priceCalculator";
 import { getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
 
@@ -52,7 +52,8 @@ export default function PriceListPage() {
   useEffect(() => {
     const loadPhones = async () => {
       try {
-        setPhones(mockPhones);
+        const data = await getPhones();
+        setPhones(data);
         setLoading(false);
       } catch (error) {
         console.error("Telefonlar yüklenirken hata:", error);
@@ -61,6 +62,16 @@ export default function PriceListPage() {
     };
 
     loadPhones();
+
+    // Real-time subscription
+    const subscription = subscribeToPhones((updatedPhones) => {
+      setPhones(updatedPhones);
+    });
+
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const filteredPhones = phones.filter(

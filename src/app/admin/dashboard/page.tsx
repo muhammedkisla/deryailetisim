@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Phone } from "@/types";
-import { mockPhones } from "@/lib/supabase";
+import {
+  getPhones,
+  addPhone,
+  updatePhone,
+  deletePhone,
+  subscribeToPhones,
+} from "@/lib/supabase";
 import { formatPrice, calculatePrices } from "@/lib/priceCalculator";
 import { phoneColors, getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
 
@@ -26,6 +32,11 @@ export default function AdminDashboard() {
     stock: true,
   });
 
+  const loadPhones = async () => {
+    const data = await getPhones();
+    setPhones(data);
+  };
+
   useEffect(() => {
     // Oturum kontrolü
     const isLoggedIn = sessionStorage.getItem("isAdminLoggedIn");
@@ -35,7 +46,18 @@ export default function AdminDashboard() {
     }
 
     // Telefonları yükle
-    setPhones(mockPhones);
+    loadPhones();
+
+    // Real-time subscription
+    const subscription = subscribeToPhones((updatedPhones) => {
+      setPhones(updatedPhones);
+    });
+
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const handleLogout = () => {
@@ -43,7 +65,7 @@ export default function AdminDashboard() {
     router.push("/admin/login");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // En az bir renk seçilmiş mi kontrol et
@@ -52,11 +74,7 @@ export default function AdminDashboard() {
       return;
     }
 
-    const phoneId = editingPhone?.id || crypto.randomUUID();
-    const now = new Date().toISOString();
-
-    const newPhone: Phone = {
-      id: phoneId,
+    const phoneData = {
       brand: formData.brand,
       model: formData.model,
       colors: formData.colors,
@@ -64,16 +82,24 @@ export default function AdminDashboard() {
       singlePaymentRate: parseFloat(formData.singlePaymentRate),
       installmentRate: parseFloat(formData.installmentRate),
       stock: formData.stock,
-      createdAt: editingPhone?.createdAt || now,
-      updatedAt: now,
     };
 
     if (editingPhone) {
       // Güncelleme
-      setPhones(phones.map((p) => (p.id === editingPhone.id ? newPhone : p)));
+      const result = await updatePhone(editingPhone.id, phoneData);
+      if (result) {
+        alert("Telefon başarıyla güncellendi!");
+      } else {
+        alert("Telefon güncellenirken bir hata oluştu!");
+      }
     } else {
       // Yeni ekleme
-      setPhones([newPhone, ...phones]);
+      const result = await addPhone(phoneData);
+      if (result) {
+        alert("Telefon başarıyla eklendi!");
+      } else {
+        alert("Telefon eklenirken bir hata oluştu!");
+      }
     }
 
     // Formu sıfırla
@@ -123,9 +149,14 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Bu telefonu silmek istediğinizden emin misiniz?")) {
-      setPhones(phones.filter((p) => p.id !== id));
+      const result = await deletePhone(id);
+      if (result) {
+        alert("Telefon başarıyla silindi!");
+      } else {
+        alert("Telefon silinirken bir hata oluştu!");
+      }
     }
   };
 
