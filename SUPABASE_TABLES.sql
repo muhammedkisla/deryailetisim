@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS public.phones (
     cash_price DECIMAL(10,2) NOT NULL,
     single_payment_rate DECIMAL(4,2) NOT NULL DEFAULT 1.05,
     installment_rate DECIMAL(4,2) NOT NULL DEFAULT 1.15,
+    -- Computed columns (STORED): Veritabanında hesaplanır, her sorguda yeniden hesaplamaz
+    single_payment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price * single_payment_rate, 2)) STORED,
+    installment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price * installment_rate, 2)) STORED,
     image_url TEXT,
     stock BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
@@ -33,27 +36,51 @@ CREATE TRIGGER set_updated_at
 -- Row Level Security (RLS) ayarları
 ALTER TABLE public.phones ENABLE ROW LEVEL SECURITY;
 
--- Herkes okuyabilir (public access)
+-- Herkes okuyabilir (public access) - Liste sayfası için
 CREATE POLICY "Herkes telefonları görüntüleyebilir"
     ON public.phones
     FOR SELECT
     USING (true);
 
--- Admin işlemleri için policy (şimdilik herkese açık, sonra auth eklenebilir)
-CREATE POLICY "Herkes telefon ekleyebilir"
+-- Admin işlemleri için policy
+-- ⚠️ ÖNEMLİ: Canlıya çıkmadan önce bu policy'leri authenticated kullanıcılar ile sınırlandırın
+-- ⚠️ Şu an geliştirme aşaması için herkese açık (sessionStorage kontrolü client-side'da yapılıyor)
+
+-- DEVELOPMENT (Geliştirme) - Şu an aktif
+CREATE POLICY "Herkes telefon ekleyebilir (DEV)"
     ON public.phones
     FOR INSERT
     WITH CHECK (true);
 
-CREATE POLICY "Herkes telefon güncelleyebilir"
+CREATE POLICY "Herkes telefon güncelleyebilir (DEV)"
     ON public.phones
     FOR UPDATE
     USING (true);
 
-CREATE POLICY "Herkes telefon silebilir"
+CREATE POLICY "Herkes telefon silebilir (DEV)"
     ON public.phones
     FOR DELETE
     USING (true);
+
+-- PRODUCTION (Canlı) - Canlıya çıkmadan önce yukarıdaki policy'leri silin ve bunları aktif edin
+-- DROP POLICY "Herkes telefon ekleyebilir (DEV)" ON public.phones;
+-- DROP POLICY "Herkes telefon güncelleyebilir (DEV)" ON public.phones;
+-- DROP POLICY "Herkes telefon silebilir (DEV)" ON public.phones;
+-- 
+-- CREATE POLICY "Sadece admin telefon ekleyebilir"
+--     ON public.phones
+--     FOR INSERT
+--     WITH CHECK (auth.role() = 'authenticated');
+-- 
+-- CREATE POLICY "Sadece admin telefon güncelleyebilir"
+--     ON public.phones
+--     FOR UPDATE
+--     USING (auth.role() = 'authenticated');
+-- 
+-- CREATE POLICY "Sadece admin telefon silebilir"
+--     ON public.phones
+--     FOR DELETE
+--     USING (auth.role() = 'authenticated');
 
 -- Örnek başlangıç verileri (opsiyonel)
 INSERT INTO public.phones (brand, model, colors, cash_price, single_payment_rate, installment_rate, stock) VALUES
@@ -72,3 +99,15 @@ CREATE INDEX IF NOT EXISTS idx_phones_brand ON public.phones(brand);
 CREATE INDEX IF NOT EXISTS idx_phones_created_at ON public.phones(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_phones_stock ON public.phones(stock);
 
+-- ============================================================================
+-- MİGRATİON: Mevcut tabloya computed columns eklemek için
+-- ============================================================================
+-- Eğer tablo zaten oluşturulmuşsa ve computed columns eklemek istiyorsanız:
+--
+-- ALTER TABLE public.phones 
+--   ADD COLUMN IF NOT EXISTS single_payment_price DECIMAL(10,2) 
+--   GENERATED ALWAYS AS (ROUND(cash_price * single_payment_rate, 2)) STORED;
+--
+-- ALTER TABLE public.phones 
+--   ADD COLUMN IF NOT EXISTS installment_price DECIMAL(10,2) 
+--   GENERATED ALWAYS AS (ROUND(cash_price * installment_rate, 2)) STORED;

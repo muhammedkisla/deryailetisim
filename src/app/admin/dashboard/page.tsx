@@ -48,14 +48,14 @@ export default function AdminDashboard() {
     // Telefonları yükle
     loadPhones();
 
-    // Real-time subscription
-    const subscription = subscribeToPhones((updatedPhones) => {
-      setPhones(updatedPhones);
+    // Real-time subscription - Artımlı güncelleme
+    const unsubscribe = subscribeToPhones((updater) => {
+      setPhones((prev) => updater(prev));
     });
 
     // Cleanup
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
@@ -89,6 +89,8 @@ export default function AdminDashboard() {
       const result = await updatePhone(editingPhone.id, phoneData);
       if (result) {
         alert("Telefon başarıyla güncellendi!");
+        // Listeyi hemen güncelle
+        await loadPhones();
       } else {
         alert("Telefon güncellenirken bir hata oluştu!");
       }
@@ -97,6 +99,8 @@ export default function AdminDashboard() {
       const result = await addPhone(phoneData);
       if (result) {
         alert("Telefon başarıyla eklendi!");
+        // Listeyi hemen güncelle
+        await loadPhones();
       } else {
         alert("Telefon eklenirken bir hata oluştu!");
       }
@@ -154,6 +158,8 @@ export default function AdminDashboard() {
       const result = await deletePhone(id);
       if (result) {
         alert("Telefon başarıyla silindi!");
+        // Listeyi hemen güncelle
+        await loadPhones();
       } else {
         alert("Telefon silinirken bir hata oluştu!");
       }
@@ -548,7 +554,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Ürün Listesi */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="px-4 md:px-6 py-4 border-b border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h2 className="text-xl font-bold text-gray-800">
@@ -604,7 +610,7 @@ export default function AdminDashboard() {
               </p>
             </div>
           ) : (
-            <div className="p-2 md:p-4 space-y-4">
+            <div className="p-3 space-y-2">
               {(() => {
                 // Telefonları filtrele
                 const filteredPhones = phones.filter(
@@ -671,8 +677,8 @@ export default function AdminDashboard() {
                     className="border border-gray-200 rounded-lg overflow-hidden"
                   >
                     {/* Marka Başlığı */}
-                    <div className="bg-linear-to-r from-gray-600 to-gray-700 px-2 py-2 md:px-4 md:py-3">
-                      <h3 className="text-base md:text-lg font-bold text-white">
+                    <div className="bg-linear-to-r from-gray-600 to-gray-700 px-2 py-1.5">
+                      <h3 className="text-sm md:text-base font-bold text-white">
                         {brand}
                       </h3>
                     </div>
@@ -691,25 +697,25 @@ export default function AdminDashboard() {
                         </colgroup>
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
                               Model
                             </th>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
                               Renk
                             </th>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
                               Nakit
                             </th>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
                               Tek Çekim
                             </th>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
                               Taksit
                             </th>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-center text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-tight">
                               Stok
                             </th>
-                            <th className="px-2 py-2 md:px-4 md:py-3 text-right text-xs md:text-xs font-medium text-gray-500 uppercase tracking-tight md:tracking-wider">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-tight">
                               İşlemler
                             </th>
                           </tr>
@@ -728,15 +734,15 @@ export default function AdminDashboard() {
                                   index % 2 === 0 ? "bg-white" : "bg-gray-50"
                                 }`}
                               >
-                                <td className="px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm font-medium text-gray-900">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs font-medium text-gray-900">
                                   {phone.model}
                                 </td>
-                                <td className="px-2 py-2 md:px-4 md:py-3">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5">
                                   <div className="flex items-center gap-1 flex-wrap">
                                     {phone.colors.map((color) => (
                                       <span
                                         key={color}
-                                        className={`w-5 h-5 md:w-6 md:h-6 rounded-full shrink-0 ${
+                                        className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
                                           colorNeedsBorder(color)
                                             ? "border border-gray-300"
                                             : ""
@@ -749,30 +755,30 @@ export default function AdminDashboard() {
                                     ))}
                                   </div>
                                 </td>
-                                <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-xs md:text-sm font-semibold text-green-600">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-green-600">
                                   {formatPrice(prices.cash)}
                                 </td>
-                                <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-xs md:text-sm font-semibold text-blue-600">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-blue-600">
                                   {formatPrice(prices.singlePayment)}
                                 </td>
-                                <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-xs md:text-sm font-semibold text-purple-600">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-purple-600">
                                   {formatPrice(prices.installment)}
                                 </td>
-                                <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-center">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-center">
                                   {phone.stock ? (
-                                    <span className="px-1 md:px-2 inline-flex text-[10px] md:text-xs leading-4 md:leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-green-100 text-green-800">
                                       Var
                                     </span>
                                   ) : (
-                                    <span className="px-1 md:px-2 inline-flex text-[10px] md:text-xs leading-4 md:leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-red-100 text-red-800">
                                       Yok
                                     </span>
                                   )}
                                 </td>
-                                <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-right text-xs md:text-sm font-medium">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-[10px] md:text-xs font-medium">
                                   <button
                                     onClick={() => handleEdit(phone)}
-                                    className="text-blue-600 hover:text-blue-900 mr-2 md:mr-3 font-medium"
+                                    className="text-blue-600 hover:text-blue-900 mr-1 md:mr-2 font-medium"
                                   >
                                     Düzenle
                                   </button>

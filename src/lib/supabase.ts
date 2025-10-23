@@ -15,11 +15,47 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Supabase Database Functions
 import { Phone } from "@/types";
 
+// Supabase'den gelen ham veri tipi
+interface DbPhone {
+  id: string;
+  brand: string;
+  model: string;
+  colors: string[];
+  cash_price: string | number;
+  single_payment_rate: string | number;
+  installment_rate: string | number;
+  // Computed columns (STORED) - Veritabanında otomatik hesaplanır
+  single_payment_price?: string | number;
+  installment_price?: string | number;
+  image_url?: string;
+  stock: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Supabase veritabanı verisini TypeScript formatına dönüştür
+// Supabase numeric/decimal alanları string döndürür, Number() ile dönüştürüyoruz
+function mapDbPhone(item: DbPhone): Phone {
+  return {
+    id: item.id,
+    brand: item.brand,
+    model: item.model,
+    colors: item.colors,
+    cashPrice: Number(item.cash_price),
+    singlePaymentRate: Number(item.single_payment_rate),
+    installmentRate: Number(item.installment_rate),
+    imageUrl: item.image_url,
+    stock: item.stock,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
+  };
+}
+
 // Tüm telefonları getir
 export async function getPhones(): Promise<Phone[]> {
   const { data, error } = await supabase
     .from("phones")
-    .select("*")
+    .select("*, single_payment_price, installment_price")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -27,7 +63,7 @@ export async function getPhones(): Promise<Phone[]> {
     return [];
   }
 
-  return data || [];
+  return (data || []).map(mapDbPhone);
 }
 
 // Yeni telefon ekle
@@ -48,7 +84,7 @@ export async function addPhone(
         stock: phone.stock,
       },
     ])
-    .select()
+    .select("*, single_payment_price, installment_price")
     .single();
 
   if (error) {
@@ -56,21 +92,7 @@ export async function addPhone(
     return null;
   }
 
-  return data
-    ? {
-        id: data.id,
-        brand: data.brand,
-        model: data.model,
-        colors: data.colors,
-        cashPrice: data.cash_price,
-        singlePaymentRate: data.single_payment_rate,
-        installmentRate: data.installment_rate,
-        imageUrl: data.image_url,
-        stock: data.stock,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-      }
-    : null;
+  return data ? mapDbPhone(data) : null;
 }
 
 // Telefon güncelle
@@ -95,7 +117,7 @@ export async function updatePhone(
     .from("phones")
     .update(updateData)
     .eq("id", id)
-    .select()
+    .select("*, single_payment_price, installment_price")
     .single();
 
   if (error) {
@@ -103,21 +125,7 @@ export async function updatePhone(
     return null;
   }
 
-  return data
-    ? {
-        id: data.id,
-        brand: data.brand,
-        model: data.model,
-        colors: data.colors,
-        cashPrice: data.cash_price,
-        singlePaymentRate: data.single_payment_rate,
-        installmentRate: data.installment_rate,
-        imageUrl: data.image_url,
-        stock: data.stock,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-      }
-    : null;
+  return data ? mapDbPhone(data) : null;
 }
 
 // Telefon sil
@@ -132,22 +140,61 @@ export async function deletePhone(id: string): Promise<boolean> {
   return true;
 }
 
-// Real-time subscription için
-export function subscribeToPhones(callback: (phones: Phone[]) => void) {
-  const subscription = supabase
-    .channel("phones-channel")
+// Real-time subscription - Artımlı güncelleme (Önerilen)
+// Her event'te sadece değişen kaydı günceller, tüm listeyi yeniden çekmez
+export function subscribeToPhones(
+  onChange: (updater: (prev: Phone[]) => Phone[]) => void
+) {
+  const channel = supabase
+    .channel("realtime:phones")
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "phones" },
-      async () => {
-        // Değişiklik olduğunda tüm telefonları yeniden çek
-        const phones = await getPhones();
-        callback(phones);
+      (payload) => {
+        if (payload.eventType === "INSERT" && payload.new) {
+          const newPhone = mapDbPhone(payload.new as unknown as DbPhone);
+          onChange((prev) => [newPhone, ...prev]);
+        } else if (payload.eventType === "UPDATE" && payload.new) {
+          const updatedPhone = mapDbPhone(payload.new as unknown as DbPhone);
+          onChange((prev) =>
+            prev.map((p) => (p.id === updatedPhone.id ? updatedPhone : p))
+          );
+        } else if (payload.eventType === "DELETE" && payload.old) {
+          const oldId = (payload.old as { id: string }).id;
+          onChange((prev) => prev.filter((p) => p.id !== oldId));
+        }
       }
     )
     .subscribe();
 
-  return subscription;
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+// Real-time subscription - Debounced refetch versiyonu
+// Peş peşe gelen event'lerde tek fetch yapar
+let refetchTimer: NodeJS.Timeout | null = null;
+export function subscribeToPhonesRefetch(callback: (phones: Phone[]) => void) {
+  const channel = supabase
+    .channel("phones-refetch-channel")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "phones" },
+      () => {
+        if (refetchTimer) clearTimeout(refetchTimer);
+        refetchTimer = setTimeout(async () => {
+          const phones = await getPhones();
+          callback(phones);
+        }, 200); // 200ms debounce
+      }
+    )
+    .subscribe();
+
+  return () => {
+    if (refetchTimer) clearTimeout(refetchTimer);
+    supabase.removeChannel(channel);
+  };
 }
 
 // Mock data - Başlangıç verisi olarak kullanılabilir

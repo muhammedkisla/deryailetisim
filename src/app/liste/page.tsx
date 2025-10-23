@@ -50,27 +50,44 @@ export default function PriceListPage() {
   };
 
   useEffect(() => {
-    const loadPhones = async () => {
+    let unsubscribe = () => {};
+
+    (async () => {
       try {
+        // İlk yükleme
         const data = await getPhones();
         setPhones(data);
         setLoading(false);
+
+        // Real-time subscription - Artımlı güncelleme
+        // Her event'te sadece değişen kaydı günceller
+        unsubscribe = subscribeToPhones((updater) => {
+          setPhones((prev) => updater(prev));
+        });
       } catch (error) {
         console.error("Telefonlar yüklenirken hata:", error);
         setLoading(false);
       }
+    })();
+
+    // Yedek güncelleme - Her 30 saniyede bir
+    const pollingInterval = setInterval(async () => {
+      const data = await getPhones();
+      setPhones(data);
+    }, 30000);
+
+    // Sayfa focus olduğunda yenile
+    const handleFocus = async () => {
+      const data = await getPhones();
+      setPhones(data);
     };
-
-    loadPhones();
-
-    // Real-time subscription
-    const subscription = subscribeToPhones((updatedPhones) => {
-      setPhones(updatedPhones);
-    });
+    window.addEventListener("focus", handleFocus);
 
     // Cleanup
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
+      clearInterval(pollingInterval);
+      window.removeEventListener("focus", handleFocus);
     };
   }, []);
 
@@ -112,17 +129,17 @@ export default function PriceListPage() {
       <main className="grow py-2">
         <div className="container mx-auto px-4">
           {/* Liste Container */}
-          <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
             {/* Liste Header */}
-            <div className="bg-linear-to-r from-blue-600 to-blue-800 text-white p-6">
-              <div className="flex items-start justify-between mb-4">
+            <div className="bg-linear-to-r from-blue-600 to-blue-800 text-white p-4">
+              <div className="flex items-start justify-between mb-3">
                 {/* Sol: Logo */}
                 <div className="flex items-center">
                   <Image
                     src="/logo-bg.jpeg"
                     alt="Derya İletişim"
-                    width={110}
-                    height={110}
+                    width={90}
+                    height={90}
                     className="object-contain rounded-lg"
                   />
                 </div>
@@ -132,22 +149,22 @@ export default function PriceListPage() {
                   <h1 className="text-sm md:text-md font-bold mb-1">
                     TOPTAN GÜNLÜK FİYAT LİSTESİ
                   </h1>
-                  <p className="text-blue-100 text-lg">{currentDate}</p>
+                  <p className="text-blue-100 text-base">{currentDate}</p>
                 </div>
               </div>
 
               {/* Arama Çubuğu */}
-              <div className="mt-4">
+              <div className="mt-3">
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Marka veya model ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 pl-12 rounded-lg border-0 text-gray-100 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
+                    className="w-full px-4 py-2 pl-10 rounded-lg border-0 text-gray-100 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
                   />
                   <svg
-                    className="absolute left-4 top-3.5 w-5 h-5 text-gray-400"
+                    className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -164,7 +181,7 @@ export default function PriceListPage() {
             </div>
 
             {/* Liste İçeriği */}
-            <div className="p-2 md:p-4">
+            <div className="p-3">
               {loading ? (
                 <div className="flex justify-center items-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -174,15 +191,15 @@ export default function PriceListPage() {
                   <p className="text-gray-500">Telefon bulunamadı</p>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-2">
                   {brands.map((brand) => (
                     <div
                       key={brand}
                       className="border border-gray-200 rounded-lg overflow-hidden"
                     >
                       {/* Marka Başlığı */}
-                      <div className="bg-linear-to-r from-gray-800 to-gray-700 px-3 py-3 md:px-4 md:py-3">
-                        <h2 className="text-lg md:text-xl font-bold text-white">
+                      <div className="bg-linear-to-r from-gray-700 to-gray-500 px-2 py-1">
+                        <h2 className="text-base md:text-lg font-bold text-white">
                           {brand}
                         </h2>
                       </div>
@@ -199,19 +216,19 @@ export default function PriceListPage() {
                           </colgroup>
                           <thead>
                             <tr className="bg-gray-100 border-b border-gray-300">
-                              <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-sm font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-bold text-gray-700 uppercase">
                                 Model
                               </th>
-                              <th className="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-sm font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-bold text-gray-700 uppercase">
                                 Renk
                               </th>
-                              <th className="px-2 py-2 md:px-4 md:py-3 text-right text-xs md:text-sm font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-bold text-gray-700 uppercase">
                                 Nakit
                               </th>
-                              <th className="px-2 py-2 md:px-4 md:py-3 text-right text-xs md:text-sm font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-bold text-gray-700 uppercase">
                                 Tek Çekim
                               </th>
-                              <th className="px-2 py-2 md:px-4 md:py-3 text-right text-xs md:text-sm font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-bold text-gray-700 uppercase">
                                 Taksit
                               </th>
                             </tr>
@@ -230,15 +247,15 @@ export default function PriceListPage() {
                                     index % 2 === 0 ? "bg-white" : "bg-gray-50"
                                   }`}
                                 >
-                                  <td className="px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm text-gray-900 font-medium">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs text-gray-900 font-medium">
                                     {phone.model}
                                   </td>
-                                  <td className="px-2 py-2 md:px-4 md:py-3">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5">
                                     <div className="flex items-center gap-1 flex-wrap">
                                       {phone.colors.map((color) => (
                                         <span
                                           key={color}
-                                          className={`w-4 h-4 md:w-5 md:h-5 rounded-full shrink-0 ${
+                                          className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
                                             colorNeedsBorder(color)
                                               ? "border border-gray-300"
                                               : ""
@@ -251,13 +268,13 @@ export default function PriceListPage() {
                                       ))}
                                     </div>
                                   </td>
-                                  <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-right text-xs md:text-sm font-semibold text-green-600">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-green-600">
                                     {formatPrice(prices.cash)}
                                   </td>
-                                  <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-right text-xs md:text-sm font-semibold text-blue-600">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-blue-600">
                                     {formatPrice(prices.singlePayment)}
                                   </td>
-                                  <td className="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap text-right text-xs md:text-sm font-semibold text-purple-600">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-purple-600">
                                     {formatPrice(prices.installment)}
                                   </td>
                                 </tr>
@@ -273,8 +290,8 @@ export default function PriceListPage() {
             </div>
 
             {/* Hesap Numaralarımız */}
-            <div className="p-2 md:p-6 border-t border-gray-200">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">
+            <div className="p-4 border-t border-gray-200">
+              <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 text-center">
                 Hesap Numaralarımız
               </h2>
               <div className="max-w-3xl mx-auto">
@@ -282,13 +299,13 @@ export default function PriceListPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-200 border-b border-gray-300">
-                        <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-bold text-gray-700 uppercase">
+                        <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
                           Banka
                         </th>
-                        <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-bold text-gray-700 uppercase">
+                        <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
                           IBAN
                         </th>
-                        <th className="px-3 py-3 md:px-6 md:py-4 w-16"></th>
+                        <th className="px-3 py-2 w-16"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -297,13 +314,13 @@ export default function PriceListPage() {
                           key={account.id}
                           className="hover:bg-gray-100 transition-colors"
                         >
-                          <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm font-medium text-gray-900">
+                          <td className="px-3 py-2 text-xs font-medium text-gray-900">
                             {account.bankName}
                           </td>
-                          <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-700 font-mono">
+                          <td className="px-3 py-2 text-xs text-gray-700 font-mono">
                             {account.iban}
                           </td>
-                          <td className="px-3 py-3 md:px-6 md:py-4 text-center">
+                          <td className="px-3 py-2 text-center">
                             <button
                               onClick={() => copyToClipboard(account.iban)}
                               className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 transition-colors relative group"
@@ -350,13 +367,13 @@ export default function PriceListPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="text-center mt-1 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-xs md:text-sm font-semibold text-gray-800">
+                <div className="text-center mt-1 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-xs font-semibold text-gray-800">
                     DERYA İLETİŞİM TEKNOLOJİ ÜRÜNLERİ VE ELEKTRONİK PAZARLAMA
                     TİC. LTD. ŞTİ
                   </p>
                 </div>
-                <p className="text-center text-xs md:text-sm text-gray-500 mt-3">
+                <p className="text-center text-xs text-gray-500 mt-2">
                   Havale/EFT yaparken açıklama kısmına ad-soyad ve telefon
                   numaranızı yazmayı unutmayın.
                 </p>
@@ -364,8 +381,8 @@ export default function PriceListPage() {
             </div>
 
             {/* Footer Bilgilendirme */}
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-              <div className="flex items-center text-sm text-gray-600">
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="flex items-center text-xs text-gray-600">
                 <svg
                   className="w-5 h-5 text-yellow-600 mr-2"
                   fill="none"
