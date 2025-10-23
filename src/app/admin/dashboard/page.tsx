@@ -27,8 +27,8 @@ export default function AdminDashboard() {
     model: "",
     colors: [] as string[],
     cashPrice: "",
-    singlePaymentRate: "1.05",
-    installmentRate: "1.15",
+    singlePaymentRate: "0.97",
+    installmentRate: "0.93",
     stock: true,
   });
 
@@ -68,6 +68,17 @@ export default function AdminDashboard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Marka ve model boş mu kontrol et
+    if (!formData.brand.trim()) {
+      alert("Lütfen marka adını giriniz!");
+      return;
+    }
+
+    if (!formData.model.trim()) {
+      alert("Lütfen model adını giriniz!");
+      return;
+    }
+
     // En az bir renk seçilmiş mi kontrol et
     if (formData.colors.length === 0) {
       alert("Lütfen en az bir renk seçiniz!");
@@ -75,8 +86,8 @@ export default function AdminDashboard() {
     }
 
     const phoneData = {
-      brand: formData.brand,
-      model: formData.model,
+      brand: formData.brand.trim(),
+      model: formData.model.trim(),
       colors: formData.colors,
       cashPrice: parseFloat(formData.cashPrice),
       singlePaymentRate: parseFloat(formData.singlePaymentRate),
@@ -116,8 +127,8 @@ export default function AdminDashboard() {
       model: "",
       colors: [],
       cashPrice: "",
-      singlePaymentRate: "1.05",
-      installmentRate: "1.15",
+      singlePaymentRate: "0.97",
+      installmentRate: "0.93",
       stock: true,
     });
     setIsAddingPhone(false);
@@ -410,7 +421,7 @@ export default function AdminDashboard() {
               {/* Fiyat Bilgileri - Ayrı Bölüm */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 md:p-4">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                  💰 Fiyat Bilgileri
+                  💰 Fiyat Bilgileri (Nakit = En Düşük Fiyat)
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
@@ -445,13 +456,14 @@ export default function AdminDashboard() {
                         })
                       }
                       required
-                      min="1"
+                      min="0.01"
+                      max="1"
                       step="0.01"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="1.05"
+                      placeholder="0.97"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Örn: 1.05 = %5 fazla
+                      Örn: 0.97 → Nakit / 0.97 (nakitten %3 pahalı)
                     </p>
                   </div>
 
@@ -469,13 +481,14 @@ export default function AdminDashboard() {
                         })
                       }
                       required
-                      min="1"
+                      min="0.01"
+                      max="1"
                       step="0.01"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="1.15"
+                      placeholder="0.93"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Örn: 1.15 = %15 fazla
+                      Örn: 0.93 → Nakit / 0.93 (nakitten %7 pahalı)
                     </p>
                   </div>
                 </div>
@@ -483,32 +496,51 @@ export default function AdminDashboard() {
 
               {/* Fiyat Önizlemesi */}
               {formData.cashPrice && (
-                <div className="bg-gray-50 p-4 rounded-lg -mt-3">
-                  <h3 className="font-semibold text-gray-800 mb-3">
-                    Fiyat Önizlemesi:
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-4 rounded-lg -mt-3 border border-blue-100">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <span>📊</span> Fiyat Önizlemesi
                   </h3>
                   <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-sm text-gray-600">Nakit</p>
-                      <p className="text-lg font-bold text-green-600">
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-500 mb-1">Nakit</p>
+                      <p className="text-sm text-gray-600 mb-2">(En Düşük)</p>
+                      <p className="text-lg md:text-xl font-bold text-green-600">
                         {formatPrice(parseFloat(formData.cashPrice))}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Tek Çekim</p>
-                      <p className="text-lg font-bold text-blue-600">
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-500 mb-1">Tek Çekim</p>
+                      <p className="text-sm text-gray-600 mb-2">
+                        (+%
+                        {Math.round(
+                          (1 - parseFloat(formData.singlePaymentRate)) * 100
+                        )}
+                        )
+                      </p>
+                      <p className="text-lg md:text-xl font-bold text-blue-600">
                         {formatPrice(
-                          parseFloat(formData.cashPrice) *
-                            parseFloat(formData.singlePaymentRate)
+                          Math.round(
+                            parseFloat(formData.cashPrice) /
+                              parseFloat(formData.singlePaymentRate)
+                          )
                         )}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Taksitli</p>
-                      <p className="text-lg font-bold text-purple-600">
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-500 mb-1">Taksit</p>
+                      <p className="text-sm text-gray-600 mb-2">
+                        (+%
+                        {Math.round(
+                          (1 - parseFloat(formData.installmentRate)) * 100
+                        )}
+                        )
+                      </p>
+                      <p className="text-lg md:text-xl font-bold text-purple-600">
                         {formatPrice(
-                          parseFloat(formData.cashPrice) *
-                            parseFloat(formData.installmentRate)
+                          Math.round(
+                            parseFloat(formData.cashPrice) /
+                              parseFloat(formData.installmentRate)
+                          )
                         )}
                       </p>
                     </div>
@@ -819,18 +851,17 @@ export default function AdminDashboard() {
               />
             </svg>
             <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-1">Önemli Bilgiler:</p>
+              <p className="font-semibold mb-1">💡 Fiyat Hesaplama Mantığı:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>
-                  Nakit fiyat girdikten sonra diğer fiyatlar otomatik hesaplanır
+                  <strong>Nakit fiyat</strong> en düşük fiyattır (baz fiyat)
                 </li>
                 <li>
-                  Tek çekim ve taksit oranlarını ihtiyacınıza göre
-                  ayarlayabilirsiniz
+                  <strong>Hesaplama:</strong> Nakit / Oran = Diğer fiyatlar
                 </li>
+                <li>Örn: 100.000₺ / 0.93 = 107.527₺ (Taksit fiyatı)</li>
                 <li>
-                  Şu an veriler geçici olarak tutulmaktadır. Supabase
-                  entegrasyonu sonrası kalıcı olacaktır.
+                  Değişiklikler liste sayfasına anlık olarak yansır (Real-time)
                 </li>
               </ul>
             </div>

@@ -8,11 +8,12 @@ CREATE TABLE IF NOT EXISTS public.phones (
     model TEXT NOT NULL,
     colors TEXT[] NOT NULL DEFAULT '{}',
     cash_price DECIMAL(10,2) NOT NULL,
-    single_payment_rate DECIMAL(4,2) NOT NULL DEFAULT 1.05,
-    installment_rate DECIMAL(4,2) NOT NULL DEFAULT 1.15,
-    -- Computed columns (STORED): Veritabanında hesaplanır, her sorguda yeniden hesaplamaz
-    single_payment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price * single_payment_rate, 2)) STORED,
-    installment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price * installment_rate, 2)) STORED,
+    single_payment_rate DECIMAL(4,2) NOT NULL DEFAULT 0.97,
+    installment_rate DECIMAL(4,2) NOT NULL DEFAULT 0.93,
+    -- Computed columns (STORED): Direkt bölme ile fiyatları otomatik hesaplar
+    -- Nakit fiyat en düşük fiyattır, diğer fiyatlar = Nakit / Oran
+    single_payment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price / single_payment_rate, 2)) STORED,
+    installment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price / installment_rate, 2)) STORED,
     image_url TEXT,
     stock BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
@@ -82,32 +83,28 @@ CREATE POLICY "Herkes telefon silebilir (DEV)"
 --     FOR DELETE
 --     USING (auth.role() = 'authenticated');
 
--- Örnek başlangıç verileri (opsiyonel)
-INSERT INTO public.phones (brand, model, colors, cash_price, single_payment_rate, installment_rate, stock) VALUES
-('Apple', 'iPhone 15 Pro Max 256GB', ARRAY['Siyah', 'Beyaz', 'Titanyum Mavi', 'Titanyum Gri'], 115000.00, 1.05, 1.15, true),
-('Apple', 'iPhone 15 Pro 128GB', ARRAY['Siyah', 'Beyaz', 'Titanyum Mavi'], 58000.00, 1.05, 1.15, true),
-('Apple', 'iPhone 14 128GB', ARRAY['Siyah', 'Beyaz', 'Mavi', 'Mor'], 45000.00, 1.05, 1.15, true),
-('Samsung', 'Galaxy S24 Ultra 256GB', ARRAY['Titanyum Gri', 'Titanyum Mavi', 'Siyah'], 55000.00, 1.05, 1.15, true),
-('Samsung', 'Galaxy S24 128GB', ARRAY['Mor', 'Yeşil', 'Beyaz'], 42000.00, 1.05, 1.15, true),
-('Samsung', 'Galaxy A54 128GB', ARRAY['Yeşil', 'Siyah', 'Beyaz'], 18000.00, 1.05, 1.15, true),
-('Xiaomi', 'Redmi Note 13 Pro 256GB', ARRAY['Siyah', 'Mavi', 'Yeşil'], 12000.00, 1.05, 1.15, true),
-('Xiaomi', 'Xiaomi 14 Pro 256GB', ARRAY['Beyaz', 'Siyah', 'Gri'], 35000.00, 1.05, 1.15, true),
-('Huawei', 'P60 Pro 256GB', ARRAY['Gold', 'Siyah', 'Gümüş'], 32000.00, 1.05, 1.15, true);
-
 -- İndeksler (performans için)
 CREATE INDEX IF NOT EXISTS idx_phones_brand ON public.phones(brand);
 CREATE INDEX IF NOT EXISTS idx_phones_created_at ON public.phones(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_phones_stock ON public.phones(stock);
 
 -- ============================================================================
--- MİGRATİON: Mevcut tabloya computed columns eklemek için
+-- MİGRATİON: Mevcut tabloda fiyat hesaplama değişikliği (Direkt Bölme)
 -- ============================================================================
--- Eğer tablo zaten oluşturulmuşsa ve computed columns eklemek istiyorsanız:
+-- Eğer eski hesaplama mantığı ile (0.03, 0.07 veya 1.05, 1.15) oluşturulmuş tablo varsa:
+--
+-- 1. Mevcut rate değerlerini güncelle (yeni sisteme uygun hale getir)
+-- UPDATE public.phones SET single_payment_rate = 0.97 WHERE single_payment_rate IN (0.03, 1.05);
+-- UPDATE public.phones SET installment_rate = 0.93 WHERE installment_rate IN (0.07, 1.15);
+--
+-- 2. Computed columns'ı yeniden oluştur (formül değişti - direkt bölme)
+-- ALTER TABLE public.phones DROP COLUMN IF EXISTS single_payment_price;
+-- ALTER TABLE public.phones DROP COLUMN IF EXISTS installment_price;
 --
 -- ALTER TABLE public.phones 
---   ADD COLUMN IF NOT EXISTS single_payment_price DECIMAL(10,2) 
---   GENERATED ALWAYS AS (ROUND(cash_price * single_payment_rate, 2)) STORED;
+--   ADD COLUMN single_payment_price DECIMAL(10,2) 
+--   GENERATED ALWAYS AS (ROUND(cash_price / single_payment_rate, 2)) STORED;
 --
 -- ALTER TABLE public.phones 
---   ADD COLUMN IF NOT EXISTS installment_price DECIMAL(10,2) 
---   GENERATED ALWAYS AS (ROUND(cash_price * installment_rate, 2)) STORED;
+--   ADD COLUMN installment_price DECIMAL(10,2) 
+--   GENERATED ALWAYS AS (ROUND(cash_price / installment_rate, 2)) STORED;
