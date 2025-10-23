@@ -208,28 +208,40 @@ export default function PriceListPage() {
                       <div className="overflow-x-auto">
                         <table className="w-full table-fixed">
                           <colgroup>
-                            <col className="w-[40%]" />
-                            <col className="w-[15%]" />
-                            <col className="w-[15%]" />
-                            <col className="w-[15%]" />
-                            <col className="w-[15%]" />
+                            <col className="w-[30%]" />
+                            <col className="w-[14%]" />
+                            <col className="w-[14%]" />
+                            <col className="w-[14%]" />
+                            <col className="w-[14%]" />
+                            <col className="w-[14%]" />
                           </colgroup>
                           <thead>
                             <tr className="bg-gray-100 border-b border-gray-300">
-                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[10px] md:text-xs font-bold text-gray-700 uppercase">
                                 Model
                               </th>
-                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-bold text-gray-700 uppercase">
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[10px] md:text-xs font-bold text-gray-700 uppercase">
                                 Renk
                               </th>
-                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-bold text-gray-700 uppercase">
-                                Nakit
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
+                                <span className="md:hidden">Nakit</span>
+                                <span className="hidden md:inline">Nakit</span>
                               </th>
-                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-bold text-gray-700 uppercase">
-                                Tek Çekim
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
+                                <span className="md:hidden">Tek Çekim</span>
+                                <span className="hidden md:inline">
+                                  Tek Çekim
+                                </span>
                               </th>
-                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-bold text-gray-700 uppercase">
-                                Taksit
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
+                                <span className="md:hidden">Kampanya</span>
+                                <span className="hidden md:inline">
+                                  Kampanya
+                                </span>
+                              </th>
+                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
+                                <span className="md:hidden">Taksit</span>
+                                <span className="hidden md:inline">Taksit</span>
                               </th>
                             </tr>
                           </thead>
@@ -268,13 +280,35 @@ export default function PriceListPage() {
                                       ))}
                                     </div>
                                   </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-green-600">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-green-800">
                                     {formatPrice(prices.cash)}
                                   </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-blue-600">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-blue-800">
                                     {formatPrice(prices.singlePayment)}
                                   </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-purple-600">
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5">
+                                    {phone.installmentCampaign ? (
+                                      <div className="text-[9px] md:text-[10px] leading-tight text-blue-700 flex flex-wrap justify-end gap-0.5">
+                                        {phone.installmentCampaign
+                                          .split(",")
+                                          .map((item, idx) => (
+                                            <div
+                                              key={idx}
+                                              className="bg-blue-50 px-1 py-0.5 rounded border border-blue-200"
+                                            >
+                                              {item.trim()}
+                                            </div>
+                                          ))}
+                                      </div>
+                                    ) : (
+                                      <div className="text-right">
+                                        <span className="text-gray-400 italic text-xs">
+                                          -
+                                        </span>
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-purple-800">
                                     {formatPrice(prices.installment)}
                                   </td>
                                 </tr>

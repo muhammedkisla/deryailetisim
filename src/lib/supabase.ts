@@ -24,6 +24,7 @@ interface DbPhone {
   cash_price: string | number;
   single_payment_rate: string | number;
   installment_rate: string | number;
+  installment_campaign?: string;
   // Computed columns (STORED) - Veritabanında otomatik hesaplanır
   single_payment_price?: string | number;
   installment_price?: string | number;
@@ -44,6 +45,7 @@ function mapDbPhone(item: DbPhone): Phone {
     cashPrice: Number(item.cash_price),
     singlePaymentRate: Number(item.single_payment_rate),
     installmentRate: Number(item.installment_rate),
+    installmentCampaign: item.installment_campaign,
     imageUrl: item.image_url,
     stock: item.stock,
     createdAt: item.created_at,
@@ -80,6 +82,7 @@ export async function addPhone(
         cash_price: phone.cashPrice,
         single_payment_rate: phone.singlePaymentRate,
         installment_rate: phone.installmentRate,
+        installment_campaign: phone.installmentCampaign,
         image_url: phone.imageUrl,
         stock: phone.stock,
       },
@@ -110,6 +113,8 @@ export async function updatePhone(
     updateData.single_payment_rate = phone.singlePaymentRate;
   if (phone.installmentRate !== undefined)
     updateData.installment_rate = phone.installmentRate;
+  if (phone.installmentCampaign !== undefined)
+    updateData.installment_campaign = phone.installmentCampaign;
   if (phone.imageUrl !== undefined) updateData.image_url = phone.imageUrl;
   if (phone.stock !== undefined) updateData.stock = phone.stock;
 

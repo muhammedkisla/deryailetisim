@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS public.phones (
     model TEXT NOT NULL,
     colors TEXT[] NOT NULL DEFAULT '{}',
     cash_price DECIMAL(10,2) NOT NULL,
-    single_payment_rate DECIMAL(4,2) NOT NULL DEFAULT 0.97,
-    installment_rate DECIMAL(4,2) NOT NULL DEFAULT 0.93,
+    single_payment_rate DECIMAL(6,4) NOT NULL DEFAULT 0.97,
+    installment_rate DECIMAL(6,4) NOT NULL DEFAULT 0.93,
+    installment_campaign TEXT, -- Taksit kampanya bilgisi (örn: "Ziraat 4, Kuveyt 5")
     -- Computed columns (STORED): Direkt bölme ile fiyatları otomatik hesaplar
     -- Nakit fiyat en düşük fiyattır, diğer fiyatlar = Nakit / Oran
     single_payment_price DECIMAL(10,2) GENERATED ALWAYS AS (ROUND(cash_price / single_payment_rate, 2)) STORED,

@@ -7,6 +7,7 @@ export interface Phone {
   cashPrice: number; // Nakit fiyat
   installmentRate: number; // Taksit oranı (örn: 1.15 = %15 fazla)
   singlePaymentRate: number; // Tek çekim oranı (örn: 1.05 = %5 fazla)
+  installmentCampaign?: string; // Taksit kampanya bilgisi (örn: "Ziraat 4, Kuveyt 5")
   imageUrl?: string;
   stock: boolean;
   createdAt: string;

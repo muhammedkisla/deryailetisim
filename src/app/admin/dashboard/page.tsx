@@ -12,6 +12,8 @@ import {
 } from "@/lib/supabase";
 import { formatPrice, calculatePrices } from "@/lib/priceCalculator";
 import { phoneColors, getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
+import Toast, { ToastType } from "@/components/Toast";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -19,7 +21,25 @@ export default function AdminDashboard() {
   const [isAddingPhone, setIsAddingPhone] = useState(false);
   const [editingPhone, setEditingPhone] = useState<Phone | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+
+  // Toast notification state
+  const [toast, setToast] = useState<{
+    message: string;
+    type: ToastType;
+  } | null>(null);
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const showToast = (message: string, type: ToastType = "info") => {
+    setToast({ message, type });
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -29,6 +49,7 @@ export default function AdminDashboard() {
     cashPrice: "",
     singlePaymentRate: "0.97",
     installmentRate: "0.93",
+    installmentCampaign: "",
     stock: true,
   });
 
@@ -45,7 +66,8 @@ export default function AdminDashboard() {
     const parts = cleaned.split(".");
     if (parts.length <= 1) return cleaned;
     const first = parts.shift() as string;
-    return `${first}.${parts.join("")}`;
+    const decimal = parts.join("").substring(0, 4); // Max 4 ondalık basamak
+    return `${first}.${decimal}`;
   };
 
   const loadPhones = async () => {
@@ -88,20 +110,22 @@ export default function AdminDashboard() {
 
     // Marka ve model boş mu kontrol et
     if (!formData.brand.trim()) {
-      alert("Lütfen marka adını giriniz!");
+      showToast("Lütfen marka adını giriniz!", "error");
       return;
     }
 
     if (!formData.model.trim()) {
-      alert("Lütfen model adını giriniz!");
+      showToast("Lütfen model adını giriniz!", "error");
       return;
     }
 
     // En az bir renk seçilmiş mi kontrol et
     if (formData.colors.length === 0) {
-      alert("Lütfen en az bir renk seçiniz!");
+      showToast("Lütfen en az bir renk seçiniz!", "error");
       return;
     }
+
+    setIsSubmitting(true);
 
     const cashPriceNumber = Number(formData.cashPrice.replace(/\./g, ""));
     const singleRateNum = parseFloat(
@@ -111,13 +135,19 @@ export default function AdminDashboard() {
       (formData.installmentRate || "").replace(/,/g, ".")
     );
 
+    // Marka adını capitalize et (ilk harf büyük, diğerleri küçük)
+    const capitalizedBrand =
+      formData.brand.trim().charAt(0).toUpperCase() +
+      formData.brand.trim().slice(1).toLowerCase();
+
     const phoneData = {
-      brand: formData.brand.trim(),
+      brand: capitalizedBrand,
       model: formData.model.trim(),
       colors: formData.colors,
       cashPrice: cashPriceNumber,
       singlePaymentRate: singleRateNum,
       installmentRate: installmentRateNum,
+      installmentCampaign: formData.installmentCampaign.trim() || undefined,
       stock: formData.stock,
     };
 
@@ -125,24 +155,23 @@ export default function AdminDashboard() {
       // Güncelleme
       const result = await updatePhone(editingPhone.id, phoneData);
       if (result) {
-        alert("Telefon başarıyla güncellendi!");
-        // Listeyi hemen güncelle
-        await loadPhones();
+        showToast("Telefon başarıyla güncellendi!", "success");
+        // Real-time subscription otomatik güncelleyecek
       } else {
-        alert("Telefon güncellenirken bir hata oluştu!");
+        showToast("Telefon güncellenirken bir hata oluştu!", "error");
       }
     } else {
       // Yeni ekleme
       const result = await addPhone(phoneData);
       if (result) {
-        alert("Telefon başarıyla eklendi!");
-        // Listeyi hemen güncelle
-        await loadPhones();
+        showToast("Telefon başarıyla eklendi!", "success");
+        // Real-time subscription otomatik ekleyecek
       } else {
-        alert("Telefon eklenirken bir hata oluştu!");
+        showToast("Telefon eklenirken bir hata oluştu!", "error");
       }
     }
 
+    setIsSubmitting(false);
     // Formu sıfırla
     resetForm();
   };
@@ -155,6 +184,7 @@ export default function AdminDashboard() {
       cashPrice: "",
       singlePaymentRate: "0.97",
       installmentRate: "0.93",
+      installmentCampaign: "",
       stock: true,
     });
     setIsAddingPhone(false);
@@ -168,8 +198,9 @@ export default function AdminDashboard() {
       model: phone.model,
       colors: phone.colors,
       cashPrice: phone.cashPrice.toString(),
-      singlePaymentRate: phone.singlePaymentRate.toString(),
-      installmentRate: phone.installmentRate.toString(),
+      singlePaymentRate: String(phone.singlePaymentRate),
+      installmentRate: String(phone.installmentRate),
+      installmentCampaign: phone.installmentCampaign || "",
       stock: phone.stock,
     });
     setIsAddingPhone(true);
@@ -191,16 +222,21 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Bu telefonu silmek istediğinizden emin misiniz?")) {
-      const result = await deletePhone(id);
-      if (result) {
-        alert("Telefon başarıyla silindi!");
-        // Listeyi hemen güncelle
-        await loadPhones();
-      } else {
-        alert("Telefon silinirken bir hata oluştu!");
-      }
-    }
+    setConfirmDialog({
+      title: "Telefonu Sil",
+      message:
+        "Bu telefonu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        const result = await deletePhone(id);
+        if (result) {
+          showToast("Telefon başarıyla silindi!", "success");
+          // Real-time subscription otomatik kaldıracak
+        } else {
+          showToast("Telefon silinirken bir hata oluştu!", "error");
+        }
+      },
+    });
   };
 
   return (
@@ -447,7 +483,7 @@ export default function AdminDashboard() {
               {/* Fiyat Bilgileri - Ayrı Bölüm */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 md:p-4">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                  💰 Fiyat Bilgileri (Nakit = En Düşük Fiyat)
+                  💰 Fiyat Bilgileri
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
@@ -490,7 +526,7 @@ export default function AdminDashboard() {
                       }
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="0,97 veya 0.97"
+                      placeholder="0,97 veya 0,975 (max 4 ondalık)"
                     />
                   </div>
 
@@ -509,7 +545,7 @@ export default function AdminDashboard() {
                       }
                       required
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="0,93 veya 0.93"
+                      placeholder="0,93 veya 0,925 (max 4 ondalık)"
                     />
                   </div>
                 </div>
@@ -524,7 +560,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <p className="text-xs text-gray-500 mb-1">Nakit</p>
-                      <p className="text-lg md:text-xl font-bold text-green-600">
+                      <p className="text-lg md:text-xl font-bold text-green-800">
                         {formatPrice(
                           Number((formData.cashPrice || "").replace(/\./g, ""))
                         )}
@@ -533,7 +569,7 @@ export default function AdminDashboard() {
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <p className="text-xs text-gray-500 mb-1">Tek Çekim</p>
 
-                      <p className="text-lg md:text-xl font-bold text-blue-600">
+                      <p className="text-lg md:text-xl font-bold text-blue-800">
                         {formatPrice(
                           Math.round(
                             Number(
@@ -554,7 +590,7 @@ export default function AdminDashboard() {
                         Taksitli fiyat
                       </p>
 
-                      <p className="text-lg md:text-xl font-bold text-purple-600">
+                      <p className="text-lg md:text-xl font-bold text-purple-800">
                         {formatPrice(
                           Math.round(
                             Number(
@@ -573,6 +609,32 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+
+              {/* Taksit Kampanya Bilgisi Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  💳 Taksit Kampanya Bilgisi (Opsiyonel)
+                </label>
+                <input
+                  type="text"
+                  value={formData.installmentCampaign}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      installmentCampaign: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="NOT: Banka adı - taksit sayısı aralarına VİRGÜL koymak önemli!   Örn: Ziraat 4-6-12, Kuveyt 5"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Hangi bankaların kartlarıyla kaç taksit yapılabileceğini
+                  belirtin (Örn: &quot;Ziraat 4-6-12, Kuveyt 5&quot;)
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  NOT: Banka adı - taksit sayısı aralarına VİRGÜL koymak önemli!
+                </p>
+              </div>
 
               <div className="flex items-center">
                 <input
@@ -595,14 +657,42 @@ export default function AdminDashboard() {
               <div className="flex space-x-3 md:space-x-4">
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold transition-colors shadow-lg"
+                  disabled={isSubmitting}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {editingPhone ? "Güncelle" : "Ekle"}
+                  {isSubmitting && (
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  )}
+                  {isSubmitting
+                    ? "İşleniyor..."
+                    : editingPhone
+                    ? "Güncelle"
+                    : "Ekle"}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-7 py-3 rounded-xl font-semibold transition-colors"
+                  disabled={isSubmitting}
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-7 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   İptal
                 </button>
@@ -743,38 +833,38 @@ export default function AdminDashboard() {
 
                     {/* Marka Modelleri Tablosu */}
                     <div className="overflow-x-auto">
-                      <table className="w-full table-fixed">
-                        <colgroup>
-                          <col className="w-[25%]" />
-                          <col className="w-[12%]" />
-                          <col className="w-[13%]" />
-                          <col className="w-[13%]" />
-                          <col className="w-[13%]" />
-                          <col className="w-[8%]" />
-                          <col className="w-[16%]" />
-                        </colgroup>
+                      <table className="w-full">
+                        {/* Mobil: 7 sütun (Stok gizli), Desktop: 8 sütun */}
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[22%] md:w-[20%]">
                               Model
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[12%] md:w-[10%]">
                               Renk
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
                               Nakit
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
-                              Tek Çekim
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
+                              <span className="md:hidden">Tek Çekim</span>
+                              <span className="hidden md:inline">
+                                Tek Çekim
+                              </span>
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
-                              Taksit
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[14%] md:w-[12%]">
+                              <span className="md:hidden">Kmp</span>
+                              <span className="hidden md:inline">Kampanya</span>
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-tight">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
+                              <span className="md:hidden">Taksit</span>
+                              <span className="hidden md:inline">Taksit</span>
+                            </th>
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-center text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight hidden md:table-cell">
                               Stok
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-tight">
-                              İşlemler
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[18%]">
+                              <span className="hidden md:inline">İşlemler</span>
                             </th>
                           </tr>
                         </thead>
@@ -790,6 +880,10 @@ export default function AdminDashboard() {
                                 key={phone.id}
                                 className={`hover:bg-blue-50 transition-colors ${
                                   index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                } ${
+                                  phone.stock
+                                    ? "border-r-2 border-r-green-500 md:border-r-0"
+                                    : "border-r-2 border-r-red-500 md:border-r-0"
                                 }`}
                               >
                                 <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs font-medium text-gray-900">
@@ -813,16 +907,36 @@ export default function AdminDashboard() {
                                     ))}
                                   </div>
                                 </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-green-600">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-green-800">
                                   {formatPrice(prices.cash)}
                                 </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-blue-600">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-blue-800">
                                   {formatPrice(prices.singlePayment)}
                                 </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-purple-600">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5">
+                                  {phone.installmentCampaign ? (
+                                    <div className="text-[10px] leading-tight text-blue-700">
+                                      {phone.installmentCampaign
+                                        .split(",")
+                                        .map((item, idx) => (
+                                          <div
+                                            key={idx}
+                                            className="bg-blue-50 px-1 py-0.5 mb-0.5 rounded border border-blue-200 inline-block mr-1"
+                                          >
+                                            {item.trim()}
+                                          </div>
+                                        ))}
+                                    </div>
+                                  ) : (
+                                    <span className="text-gray-400 italic text-xs">
+                                      -
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-purple-800">
                                   {formatPrice(prices.installment)}
                                 </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-center">
+                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-center hidden md:table-cell">
                                   {phone.stock ? (
                                     <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-green-100 text-green-800">
                                       Var
@@ -833,19 +947,21 @@ export default function AdminDashboard() {
                                     </span>
                                   )}
                                 </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-[10px] md:text-xs font-medium">
-                                  <button
-                                    onClick={() => handleEdit(phone)}
-                                    className="text-blue-600 hover:text-blue-900 mr-1 md:mr-2 font-medium"
-                                  >
-                                    Düzenle
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(phone.id)}
-                                    className="text-red-600 hover:text-red-900 font-medium"
-                                  >
-                                    Sil
-                                  </button>
+                                <td className="px-0.5 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-medium">
+                                  <div className="flex flex-col md:flex-row md:justify-end gap-1.5 md:gap-2">
+                                    <button
+                                      onClick={() => handleEdit(phone)}
+                                      className="text-blue-600 hover:text-blue-900 font-medium py-1"
+                                    >
+                                      Düzenle
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(phone.id)}
+                                      className="text-red-600 hover:text-red-900 font-medium py-1"
+                                    >
+                                      Sil
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -860,6 +976,28 @@ export default function AdminDashboard() {
           )}
         </div>
       </main>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText="Evet, Sil"
+          cancelText="İptal"
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+          type="danger"
+        />
+      )}
     </div>
   );
 }
