@@ -32,6 +32,22 @@ export default function AdminDashboard() {
     stock: true,
   });
 
+  const formatThousandsTR = (raw: string) => {
+    if (!raw) return "";
+    const digitsOnly = raw.replace(/\D/g, "");
+    return digitsOnly.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  const normalizeRateInput = (raw: string) => {
+    if (!raw) return "";
+    const withDot = raw.replace(/,/g, ".");
+    const cleaned = withDot.replace(/[^0-9.]/g, "");
+    const parts = cleaned.split(".");
+    if (parts.length <= 1) return cleaned;
+    const first = parts.shift() as string;
+    return `${first}.${parts.join("")}`;
+  };
+
   const loadPhones = async () => {
     const data = await getPhones();
     setPhones(data);
@@ -46,7 +62,9 @@ export default function AdminDashboard() {
     }
 
     // Telefonları yükle
-    loadPhones();
+    const timeoutId = setTimeout(() => {
+      loadPhones();
+    }, 0);
 
     // Real-time subscription - Artımlı güncelleme
     const unsubscribe = subscribeToPhones((updater) => {
@@ -55,9 +73,9 @@ export default function AdminDashboard() {
 
     // Cleanup
     return () => {
+      clearTimeout(timeoutId);
       unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const handleLogout = () => {
@@ -85,13 +103,21 @@ export default function AdminDashboard() {
       return;
     }
 
+    const cashPriceNumber = Number(formData.cashPrice.replace(/\./g, ""));
+    const singleRateNum = parseFloat(
+      (formData.singlePaymentRate || "").replace(/,/g, ".")
+    );
+    const installmentRateNum = parseFloat(
+      (formData.installmentRate || "").replace(/,/g, ".")
+    );
+
     const phoneData = {
       brand: formData.brand.trim(),
       model: formData.model.trim(),
       colors: formData.colors,
-      cashPrice: parseFloat(formData.cashPrice),
-      singlePaymentRate: parseFloat(formData.singlePaymentRate),
-      installmentRate: parseFloat(formData.installmentRate),
+      cashPrice: cashPriceNumber,
+      singlePaymentRate: singleRateNum,
+      installmentRate: installmentRateNum,
       stock: formData.stock,
     };
 
@@ -295,7 +321,7 @@ export default function AdminDashboard() {
                   });
                 }, 100);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-xl font-semibold transition-colors flex items-center space-x-2 shadow-lg"
             >
               <svg
                 className="w-5 h-5"
@@ -310,7 +336,7 @@ export default function AdminDashboard() {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              <span>Yeni Telefon Ekle</span>
+              <span className="text-base">Yeni Telefon Ekle</span>
             </button>
           </div>
         )}
@@ -429,16 +455,23 @@ export default function AdminDashboard() {
                       Nakit Fiyat (₺) *
                     </label>
                     <input
-                      type="number"
-                      value={formData.cashPrice}
+                      inputMode="numeric"
+                      value={formatThousandsTR(formData.cashPrice)}
                       onChange={(e) =>
-                        setFormData({ ...formData, cashPrice: e.target.value })
+                        setFormData({
+                          ...formData,
+                          cashPrice: e.target.value,
+                        })
+                      }
+                      onBlur={(e) =>
+                        setFormData({
+                          ...formData,
+                          cashPrice: formatThousandsTR(e.target.value),
+                        })
                       }
                       required
-                      min="0"
-                      step="0.01"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="65000"
+                      placeholder="65.000"
                     />
                   </div>
 
@@ -447,24 +480,18 @@ export default function AdminDashboard() {
                       Tek Çekim Oranı *
                     </label>
                     <input
-                      type="number"
+                      inputMode="decimal"
                       value={formData.singlePaymentRate}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          singlePaymentRate: e.target.value,
+                          singlePaymentRate: normalizeRateInput(e.target.value),
                         })
                       }
                       required
-                      min="0.01"
-                      max="1"
-                      step="0.01"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="0.97"
+                      placeholder="0,97 veya 0.97"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Örn: 0.97 → Nakit / 0.97 (nakitten %3 pahalı)
-                    </p>
                   </div>
 
                   <div>
@@ -472,74 +499,73 @@ export default function AdminDashboard() {
                       Taksit Oranı *
                     </label>
                     <input
-                      type="number"
+                      inputMode="decimal"
                       value={formData.installmentRate}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          installmentRate: e.target.value,
+                          installmentRate: normalizeRateInput(e.target.value),
                         })
                       }
                       required
-                      min="0.01"
-                      max="1"
-                      step="0.01"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      placeholder="0.93"
+                      placeholder="0,93 veya 0.93"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Örn: 0.93 → Nakit / 0.93 (nakitten %7 pahalı)
-                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Fiyat Önizlemesi */}
               {formData.cashPrice && (
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-4 rounded-lg -mt-3 border border-blue-100">
+                <div className="bg-linear-to-r from-gray-50 to-blue-50 p-4 rounded-lg -mt-3 border border-blue-100">
                   <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                     <span>📊</span> Fiyat Önizlemesi
                   </h3>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <p className="text-xs text-gray-500 mb-1">Nakit</p>
-                      <p className="text-sm text-gray-600 mb-2">(En Düşük)</p>
                       <p className="text-lg md:text-xl font-bold text-green-600">
-                        {formatPrice(parseFloat(formData.cashPrice))}
+                        {formatPrice(
+                          Number((formData.cashPrice || "").replace(/\./g, ""))
+                        )}
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <p className="text-xs text-gray-500 mb-1">Tek Çekim</p>
-                      <p className="text-sm text-gray-600 mb-2">
-                        (+%
-                        {Math.round(
-                          (1 - parseFloat(formData.singlePaymentRate)) * 100
-                        )}
-                        )
-                      </p>
+
                       <p className="text-lg md:text-xl font-bold text-blue-600">
                         {formatPrice(
                           Math.round(
-                            parseFloat(formData.cashPrice) /
-                              parseFloat(formData.singlePaymentRate)
+                            Number(
+                              (formData.cashPrice || "").replace(/\./g, "")
+                            ) /
+                              parseFloat(
+                                (formData.singlePaymentRate || "").replace(
+                                  /,/g,
+                                  "."
+                                )
+                              )
                           )
                         )}
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-sm">
-                      <p className="text-xs text-gray-500 mb-1">Taksit</p>
-                      <p className="text-sm text-gray-600 mb-2">
-                        (+%
-                        {Math.round(
-                          (1 - parseFloat(formData.installmentRate)) * 100
-                        )}
-                        )
+                      <p className="text-xs text-gray-500 mb-1">
+                        Taksitli fiyat
                       </p>
+
                       <p className="text-lg md:text-xl font-bold text-purple-600">
                         {formatPrice(
                           Math.round(
-                            parseFloat(formData.cashPrice) /
-                              parseFloat(formData.installmentRate)
+                            Number(
+                              (formData.cashPrice || "").replace(/\./g, "")
+                            ) /
+                              parseFloat(
+                                (formData.installmentRate || "").replace(
+                                  /,/g,
+                                  "."
+                                )
+                              )
                           )
                         )}
                       </p>
@@ -566,17 +592,17 @@ export default function AdminDashboard() {
                 </label>
               </div>
 
-              <div className="flex space-x-4">
+              <div className="flex space-x-3 md:space-x-4">
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold transition-colors shadow-lg"
                 >
                   {editingPhone ? "Güncelle" : "Ekle"}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-semibold transition-colors"
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-7 py-3 rounded-xl font-semibold transition-colors"
                 >
                   İptal
                 </button>
@@ -832,40 +858,6 @@ export default function AdminDashboard() {
               })()}
             </div>
           )}
-        </div>
-
-        {/* Bilgilendirme */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <svg
-              className="w-5 h-5 text-blue-600 mt-0.5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-1">💡 Fiyat Hesaplama Mantığı:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>
-                  <strong>Nakit fiyat</strong> en düşük fiyattır (baz fiyat)
-                </li>
-                <li>
-                  <strong>Hesaplama:</strong> Nakit / Oran = Diğer fiyatlar
-                </li>
-                <li>Örn: 100.000₺ / 0.93 = 107.527₺ (Taksit fiyatı)</li>
-                <li>
-                  Değişiklikler liste sayfasına anlık olarak yansır (Real-time)
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </main>
     </div>
