@@ -442,11 +442,11 @@ export default function AdminDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Renkler * (En az 1 renk seçiniz)
                   </label>
-                  <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-1.5 md:gap-2">
+                  <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-1">
                     {phoneColors.map((color) => (
                       <label
                         key={color.name}
-                        className={`flex items-center gap-1.5 p-1.5 md:p-2 border rounded-lg cursor-pointer transition-all ${
+                        className={`flex items-center gap-1 p-1 border rounded cursor-pointer transition-all ${
                           formData.colors.includes(color.name)
                             ? "border-blue-500 bg-blue-50"
                             : "border-gray-300 hover:border-gray-400"
@@ -456,17 +456,17 @@ export default function AdminDashboard() {
                           type="checkbox"
                           checked={formData.colors.includes(color.name)}
                           onChange={() => handleColorToggle(color.name)}
-                          className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
                         <span
-                          className={`w-4 h-4 md:w-5 md:h-5 rounded-full shrink-0 ${
+                          className={`w-3 h-3 rounded-full shrink-0 ${
                             colorNeedsBorder(color.name)
                               ? "border border-gray-300"
                               : ""
                           }`}
                           style={{ background: getColorHex(color.name) }}
                         ></span>
-                        <span className="text-[10px] md:text-xs text-gray-700 truncate leading-tight">
+                        <span className="text-[9px] text-gray-700 truncate leading-tight">
                           {color.name}
                         </span>
                       </label>

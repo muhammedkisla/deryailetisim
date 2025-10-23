@@ -8,7 +8,6 @@ const WHATSAPP_PHONE = (
   process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905373470888"
 ).replace(/[^0-9]/g, "");
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}`;
-const TEL_URL = `tel:+${WHATSAPP_PHONE}`;
 
 export default function Home() {
   return (
