@@ -9,7 +9,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Derya İletişim - Konya Cep Telefonu ve Aksesuar Mağazası",
+  title: "Derya İletişim - Cep Telefonu ve Aksesuar Mağazası",
   description:
     "Konya'da cep telefonu, aksesuar satışı ve tamiri. Apple, Samsung, Xiaomi markalarında en uygun fiyatlar. Taksit imkanı, kargo hizmeti. Şehit Kemal Türkeş Mahallesi, Karatay/Konya.",
   metadataBase: new URL("https://deryailetisim.vercel.app"),
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Derya İletişim - Konya Cep Telefonu Mağazası",
+    title: "Derya İletişim - Cep Telefonu ve Aksesuar Mağazası",
     description:
       "Konya'da cep telefonu, aksesuar satışı ve tamiri. En uygun fiyatlar, taksit imkanı.",
     url: "https://deryailetisim.vercel.app",
@@ -49,13 +49,13 @@ export const metadata: Metadata = {
         url: "/logo-bg.jpeg",
         width: 1200,
         height: 630,
-        alt: "Derya İletişim - Konya Cep Telefonu Mağazası",
+        alt: "Derya İletişim - Cep Telefonu ve Aksesuar Mağazası",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Derya İletişim - Konya Cep Telefonu Mağazası",
+    title: "Derya İletişim - Cep Telefonu ve Aksesuar Mağazası",
     description:
       "Konya'da cep telefonu, aksesuar satışı ve tamiri. En uygun fiyatlar, taksit imkanı.",
     images: ["/logo-bg.jpeg"],

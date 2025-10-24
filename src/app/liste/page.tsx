@@ -4,13 +4,13 @@ import PriceListClient from "./PriceListClient";
 export const metadata: Metadata = {
   title: "Günlük Telefon Fiyat Listesi - Derya İletişim Konya",
   description:
-    "Konya'da güncel cep telefonu fiyatları. Apple, Samsung, Xiaomi markalarında nakit, tek çekim ve taksit fiyatları. Günlük güncellenen fiyat listesi.",
+    "Güncel cep telefonu fiyatları. Apple, Samsung, Xiaomi markalarında nakit, tek çekim ve taksit fiyatları. Günlük güncellenen fiyat listesi.",
   keywords:
     "Konya telefon fiyatları, güncel telefon fiyat listesi, Apple fiyat, Samsung fiyat, Xiaomi fiyat, taksitli telefon, nakit telefon fiyatı",
   openGraph: {
     title: "Günlük Telefon Fiyat Listesi - Derya İletişim",
     description:
-      "Konya'da güncel cep telefonu fiyatları. Nakit, tek çekim ve taksit seçenekleri.",
+      "Güncel cep telefonu fiyatları. Nakit, tek çekim ve taksit seçenekleri.",
     url: "https://deryailetisim.vercel.app/liste",
     images: ["/logo-bg.jpeg"],
   },
