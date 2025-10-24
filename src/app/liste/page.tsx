@@ -127,44 +127,46 @@ export default function PriceListPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <main className="grow py-2">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-1 md:px-4">
           {/* Liste Container */}
           <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
             {/* Liste Header */}
-            <div className="bg-linear-to-r from-blue-600 to-blue-800 text-white p-4">
-              <div className="flex items-start justify-between mb-3">
+            <div className="bg-linear-to-r from-blue-600 to-blue-800 text-white p-2 md:p-2.5">
+              <div className="flex items-start justify-between mb-1.5">
                 {/* Sol: Logo */}
                 <div className="flex items-center">
                   <Image
                     src="/logo-bg.jpeg"
                     alt="Derya İletişim"
-                    width={90}
-                    height={90}
-                    className="object-contain rounded-lg"
+                    width={60}
+                    height={60}
+                    className="object-contain rounded-lg md:w-[80px] md:h-[80px]"
                   />
                 </div>
 
                 {/* Sağ: Başlık ve Tarih */}
                 <div className="text-right">
-                  <h1 className="text-sm md:text-md font-bold mb-1">
+                  <h1 className="text-xs md:text-sm font-bold mb-0.5">
                     TOPTAN GÜNLÜK FİYAT LİSTESİ
                   </h1>
-                  <p className="text-blue-100 text-base">{currentDate}</p>
+                  <p className="text-blue-100 text-sm md:text-sm">
+                    {currentDate}
+                  </p>
                 </div>
               </div>
 
               {/* Arama Çubuğu */}
-              <div className="mt-3">
+              <div className="mt-1.5">
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Marka veya model ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-2 pl-10 rounded-lg border-0 text-gray-100 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
+                    className="w-full px-2 py-1.5 pl-8 rounded-lg border-0 text-gray-100 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white text-sm md:px-4 md:py-2 md:pl-10 md:text-base"
                   />
                   <svg
-                    className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+                    className="absolute left-2 top-1.5 w-4 h-4 text-gray-200 md:left-3 md:top-2.5 md:w-5 md:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -181,7 +183,7 @@ export default function PriceListPage() {
             </div>
 
             {/* Liste İçeriği */}
-            <div className="p-3">
+            <div className="p-0.5 md:p-3">
               {loading ? (
                 <div className="flex justify-center items-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -324,7 +326,7 @@ export default function PriceListPage() {
             </div>
 
             {/* Hesap Numaralarımız */}
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-0.5 md:p-4 border-t border-gray-200">
               <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 text-center">
                 Hesap Numaralarımız
               </h2>
@@ -415,7 +417,7 @@ export default function PriceListPage() {
             </div>
 
             {/* Footer Bilgilendirme */}
-            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+            <div className="bg-gray-50 px-0.5 md:px-4 py-1 md:py-3 border-t border-gray-200">
               <div className="flex items-center text-xs text-gray-600">
                 <svg
                   className="w-5 h-5 text-yellow-600 mr-2"
