@@ -20,7 +20,7 @@ export default function Home() {
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <Image
-              src="/hero.jpg"
+              src="/hero.webp"
               alt="Derya İletişim - Cep Telefonları"
               fill
               className="object-cover"

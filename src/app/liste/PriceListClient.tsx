@@ -141,6 +141,8 @@ export default function PriceListClient() {
                     width={60}
                     height={60}
                     className="object-contain rounded-lg md:w-[80px] md:h-[80px]"
+                    loading="eager"
+                    priority
                   />
                 </div>
 

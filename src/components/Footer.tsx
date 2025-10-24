@@ -15,6 +15,7 @@ export default function Footer() {
                 width={60}
                 height={60}
                 className="rounded-lg"
+                style={{ width: "auto", height: "auto" }}
               />
               <h3 className="text-xl font-bold">Derya İletişim</h3>
             </div>
