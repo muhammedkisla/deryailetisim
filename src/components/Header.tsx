@@ -58,8 +58,8 @@ export default function Header() {
                 alt="Derya İletişim - Konya Cep Telefonu Mağazası Logo"
                 width={160}
                 height={160}
-                sizes="(min-width: 1024px) 80px, (min-width: 768px) 64px, (min-width: 640px) 56px, 48px"
-                className="rounded-lg object-contain w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20"
+                sizes="(min-width: 1024px) 80px, (min-width: 768px) 64px, (min-width: 640px) 56px, 56px"
+                className="rounded-lg object-contain w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20"
                 priority
               />
               <span className="hidden sm:block font-semibold text-gray-900">
