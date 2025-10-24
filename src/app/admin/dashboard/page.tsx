@@ -308,7 +308,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-0.5 md:px-4 py-1 md:py-8">
         {/* İstatistikler */}
         <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-3 md:p-4">
@@ -753,7 +753,7 @@ export default function AdminDashboard() {
 
         {/* Ürün Listesi */}
         <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+          <div className="px-0.5 md:px-4 py-1 md:py-4 border-b border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h2 className="text-xl font-bold text-gray-800">
                 Telefon Listesi
@@ -808,7 +808,7 @@ export default function AdminDashboard() {
               </p>
             </div>
           ) : (
-            <div className="p-3 space-y-2">
+            <div className="p-0.5 md:p-3 space-y-2">
               {(() => {
                 // Telefonları filtrele
                 const filteredPhones = phones.filter(
