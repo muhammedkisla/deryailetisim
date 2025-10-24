@@ -55,7 +55,7 @@ export default function Header() {
             <Link href="/" className="flex items-center space-x-3">
               <Image
                 src="/logo.png"
-                alt="Derya İletişim"
+                alt="Derya İletişim - Konya Cep Telefonu Mağazası Logo"
                 width={160}
                 height={160}
                 sizes="(min-width: 1024px) 80px, (min-width: 768px) 64px, (min-width: 640px) 56px, 48px"
