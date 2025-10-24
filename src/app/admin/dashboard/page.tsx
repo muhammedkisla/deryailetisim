@@ -182,8 +182,12 @@ export default function AdminDashboard() {
       (formData.installmentRate || "").replace(/,/g, ".")
     );
 
-    // Marka adını büyük harf yap
-    const upperCaseBrand = formData.brand.trim().toUpperCase();
+    // Marka adını temizle ve büyük harf yap
+    const upperCaseBrand = formData.brand
+      .trim()
+      .replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u2600-\u26FF\u2700-\u27BF]/g, "") // Sadece problemli Unicode karakterleri kaldır
+      .replace(/\s+/g, " ") // Çoklu boşlukları tek boşluğa çevir
+      .toUpperCase();
 
     const phoneData = {
       brand: upperCaseBrand,
@@ -460,12 +464,19 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={formData.brand}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const cleanedValue = e.target.value
+                        .replace(
+                          /[\u25A0-\u25FF\u2B00-\u2BFF\u2600-\u26FF\u2700-\u27BF]/g,
+                          ""
+                        ) // Sadece problemli Unicode karakterleri kaldır
+                        .replace(/\s+/g, " ") // Çoklu boşlukları tek boşluğa çevir
+                        .toUpperCase();
                       setFormData({
                         ...formData,
-                        brand: e.target.value.toUpperCase(),
-                      })
-                    }
+                        brand: cleanedValue,
+                      });
+                    }}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="APPLE, SAMSUNG, XIAOMI..."
