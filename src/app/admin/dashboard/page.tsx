@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Phone } from "@/types";
 import {
-  getPhones,
+  getAllPhones,
   addPhone,
   updatePhone,
   deletePhone,
-  subscribeToPhones,
+  subscribeToAllPhones,
+  supabase,
 } from "@/lib/supabase";
 import { formatPrice, calculatePrices } from "@/lib/priceCalculator";
 import { phoneColors, getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
@@ -71,37 +72,83 @@ export default function AdminDashboard() {
   };
 
   const loadPhones = async () => {
-    const data = await getPhones();
+    const data = await getAllPhones();
     setPhones(data);
   };
 
-  useEffect(() => {
-    // Oturum kontrolü
-    const isLoggedIn = sessionStorage.getItem("isAdminLoggedIn");
-    if (!isLoggedIn) {
-      router.push("/admin/login");
-      return;
-    }
-
-    // Telefonları yükle
-    const timeoutId = setTimeout(() => {
-      loadPhones();
-    }, 0);
-
-    // Real-time subscription - Artımlı güncelleme
-    const unsubscribe = subscribeToPhones((updater) => {
-      setPhones((prev) => updater(prev));
+  const resetForm = useCallback(() => {
+    setFormData({
+      brand: "",
+      model: "",
+      colors: [],
+      cashPrice: "",
+      singlePaymentRate: "0.97",
+      installmentRate: "0.93",
+      installmentCampaign: "",
+      stock: true,
     });
+    setIsAddingPhone(false);
+    setEditingPhone(null);
+  }, []);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let unsubscribe: (() => void) | null = null;
+
+    // Supabase Auth kontrolü
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        // Session storage kontrolü (eski sistemle uyumluluk)
+        const isLoggedIn = sessionStorage.getItem("isAdminLoggedIn");
+        if (!isLoggedIn) {
+          router.push("/admin/login");
+          return;
+        }
+      }
+
+      // Telefonları yükle
+      timeoutId = setTimeout(() => {
+        loadPhones();
+      }, 0);
+
+      // Real-time subscription - Admin için tüm telefonları göster
+      unsubscribe = subscribeToAllPhones((updater) => {
+        setPhones((prev) => {
+          const updated = updater(prev);
+
+          // Eğer düzenlenen telefon silinmişse, güncelleme formunu kapat
+          if (editingPhone && !updated.find((p) => p.id === editingPhone.id)) {
+            setEditingPhone(null);
+            setIsAddingPhone(false);
+            resetForm();
+          }
+
+          return updated;
+        });
+      });
+    };
+
+    checkAuth();
 
     // Cleanup
     return () => {
-      clearTimeout(timeoutId);
-      unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
+      if (unsubscribe) unsubscribe();
     };
-  }, [router]);
+  }, [router, editingPhone, resetForm]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Supabase'den çıkış yap
+    await supabase.auth.signOut();
+
+    // Session storage'ı temizle
     sessionStorage.removeItem("isAdminLoggedIn");
+
+    // Login sayfasına yönlendir
     router.push("/admin/login");
   };
 
@@ -135,13 +182,11 @@ export default function AdminDashboard() {
       (formData.installmentRate || "").replace(/,/g, ".")
     );
 
-    // Marka adını capitalize et (ilk harf büyük, diğerleri küçük)
-    const capitalizedBrand =
-      formData.brand.trim().charAt(0).toUpperCase() +
-      formData.brand.trim().slice(1).toLowerCase();
+    // Marka adını büyük harf yap
+    const upperCaseBrand = formData.brand.trim().toUpperCase();
 
     const phoneData = {
-      brand: capitalizedBrand,
+      brand: upperCaseBrand,
       model: formData.model.trim(),
       colors: formData.colors,
       cashPrice: cashPriceNumber,
@@ -152,11 +197,22 @@ export default function AdminDashboard() {
     };
 
     if (editingPhone) {
+      // Düzenlenen telefon hala mevcut mu kontrol et
+      const phoneExists = phones.find((p) => p.id === editingPhone.id);
+      if (!phoneExists) {
+        showToast("Bu telefon artık mevcut değil!", "error");
+        resetForm();
+        return;
+      }
+
       // Güncelleme
       const result = await updatePhone(editingPhone.id, phoneData);
       if (result) {
         showToast("Telefon başarıyla güncellendi!", "success");
-        // Real-time subscription otomatik güncelleyecek
+        // Real-time subscription otomatik güncelleyecek, ama yedek olarak manuel güncelle
+        setTimeout(() => {
+          loadPhones();
+        }, 500);
       } else {
         showToast("Telefon güncellenirken bir hata oluştu!", "error");
       }
@@ -165,7 +221,10 @@ export default function AdminDashboard() {
       const result = await addPhone(phoneData);
       if (result) {
         showToast("Telefon başarıyla eklendi!", "success");
-        // Real-time subscription otomatik ekleyecek
+        // Real-time subscription otomatik ekleyecek, ama yedek olarak manuel güncelle
+        setTimeout(() => {
+          loadPhones();
+        }, 500);
       } else {
         showToast("Telefon eklenirken bir hata oluştu!", "error");
       }
@@ -174,21 +233,6 @@ export default function AdminDashboard() {
     setIsSubmitting(false);
     // Formu sıfırla
     resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      brand: "",
-      model: "",
-      colors: [],
-      cashPrice: "",
-      singlePaymentRate: "0.97",
-      installmentRate: "0.93",
-      installmentCampaign: "",
-      stock: true,
-    });
-    setIsAddingPhone(false);
-    setEditingPhone(null);
   };
 
   const handleEdit = (phone: Phone) => {
@@ -231,7 +275,10 @@ export default function AdminDashboard() {
         const result = await deletePhone(id);
         if (result) {
           showToast("Telefon başarıyla silindi!", "success");
-          // Real-time subscription otomatik kaldıracak
+          // Real-time subscription otomatik kaldıracak, ama yedek olarak manuel güncelle
+          setTimeout(() => {
+            loadPhones();
+          }, 500);
         } else {
           showToast("Telefon silinirken bir hata oluştu!", "error");
         }
@@ -414,11 +461,14 @@ export default function AdminDashboard() {
                     type="text"
                     value={formData.brand}
                     onChange={(e) =>
-                      setFormData({ ...formData, brand: e.target.value })
+                      setFormData({
+                        ...formData,
+                        brand: e.target.value.toUpperCase(),
+                      })
                     }
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Apple, Samsung, Xiaomi..."
+                    placeholder="APPLE, SAMSUNG, XIAOMI..."
                   />
                 </div>
 
@@ -473,7 +523,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                   {formData.colors.length === 0 && (
-                    <p className="mt-2 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-800">
                       Lütfen en az bir renk seçiniz
                     </p>
                   )}

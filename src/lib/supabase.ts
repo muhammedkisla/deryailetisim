@@ -58,7 +58,23 @@ export async function getPhones(): Promise<Phone[]> {
   const { data, error } = await supabase
     .from("phones")
     .select("*, single_payment_price, installment_price")
-    .order("created_at", { ascending: false });
+    .eq("stock", true) // Sadece stokta olan telefonları getir
+    .order("cash_price", { ascending: false }); // Nakit fiyata göre pahalıdan ucuza
+
+  if (error) {
+    console.error("Telefonları getirirken hata:", error);
+    return [];
+  }
+
+  return (data || []).map(mapDbPhone);
+}
+
+// Admin için tüm telefonları getir (stok durumu fark etmez)
+export async function getAllPhones(): Promise<Phone[]> {
+  const { data, error } = await supabase
+    .from("phones")
+    .select("*, single_payment_price, installment_price")
+    .order("cash_price", { ascending: false }); // Nakit fiyata göre pahalıdan ucuza
 
   if (error) {
     console.error("Telefonları getirirken hata:", error);
@@ -158,12 +174,69 @@ export function subscribeToPhones(
       (payload) => {
         if (payload.eventType === "INSERT" && payload.new) {
           const newPhone = mapDbPhone(payload.new as unknown as DbPhone);
-          onChange((prev) => [newPhone, ...prev]);
+          onChange((prev) => {
+            // Sadece stokta olan telefonları ekle
+            if (newPhone.stock) {
+              const updated = [newPhone, ...prev];
+              // Nakit fiyata göre pahalıdan ucuza sırala
+              return updated.sort((a, b) => b.cashPrice - a.cashPrice);
+            }
+            return prev;
+          });
         } else if (payload.eventType === "UPDATE" && payload.new) {
           const updatedPhone = mapDbPhone(payload.new as unknown as DbPhone);
-          onChange((prev) =>
-            prev.map((p) => (p.id === updatedPhone.id ? updatedPhone : p))
-          );
+          onChange((prev) => {
+            if (updatedPhone.stock) {
+              // Stokta ise güncelle ve sırala
+              const updated = prev.map((p) =>
+                p.id === updatedPhone.id ? updatedPhone : p
+              );
+              // Nakit fiyata göre pahalıdan ucuza sırala
+              return updated.sort((a, b) => b.cashPrice - a.cashPrice);
+            } else {
+              // Stokta değilse listeden kaldır
+              return prev.filter((p) => p.id !== updatedPhone.id);
+            }
+          });
+        } else if (payload.eventType === "DELETE" && payload.old) {
+          const oldId = (payload.old as { id: string }).id;
+          onChange((prev) => prev.filter((p) => p.id !== oldId));
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+// Admin için real-time subscription (tüm telefonları gösterir)
+export function subscribeToAllPhones(
+  onChange: (updater: (prev: Phone[]) => Phone[]) => void
+) {
+  const channel = supabase
+    .channel("realtime:all-phones")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "phones" },
+      (payload) => {
+        if (payload.eventType === "INSERT" && payload.new) {
+          const newPhone = mapDbPhone(payload.new as unknown as DbPhone);
+          onChange((prev) => {
+            const updated = [newPhone, ...prev];
+            // Nakit fiyata göre pahalıdan ucuza sırala
+            return updated.sort((a, b) => b.cashPrice - a.cashPrice);
+          });
+        } else if (payload.eventType === "UPDATE" && payload.new) {
+          const updatedPhone = mapDbPhone(payload.new as unknown as DbPhone);
+          onChange((prev) => {
+            const updated = prev.map((p) =>
+              p.id === updatedPhone.id ? updatedPhone : p
+            );
+            // Nakit fiyata göre pahalıdan ucuza sırala
+            return updated.sort((a, b) => b.cashPrice - a.cashPrice);
+          });
         } else if (payload.eventType === "DELETE" && payload.old) {
           const oldId = (payload.old as { id: string }).id;
           onChange((prev) => prev.filter((p) => p.id !== oldId));

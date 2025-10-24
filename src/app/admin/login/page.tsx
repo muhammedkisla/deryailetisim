@@ -2,43 +2,103 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import Toast, { ToastType } from "@/components/Toast";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: ToastType;
+  } | null>(null);
+
+  const showToast = (message: string, type: ToastType = "info") => {
+    setToast({ message, type });
+  };
+
+  // Şifre sıfırlama fonksiyonu - Geçici olarak yoruma alındı
+  /* const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      showToast("Lütfen önce e-posta adresinizi girin", "error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      console.log("Şifre sıfırlama e-postası gönderiliyor:", email);
+      console.log(
+        "Redirect URL:",
+        `${window.location.origin}/admin/reset-password`
+      );
+
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin/reset-password`,
+      });
+
+      console.log("Supabase response:", { data, error });
+
+      if (error) {
+        console.error("Supabase error:", error);
+        showToast(
+          `Şifre sıfırlama e-postası gönderilirken bir hata oluştu: ${error.message}`,
+          "error"
+        );
+        return;
+      }
+
+      showToast(
+        "Şifre sıfırlama e-postası gönderildi! E-posta kutunuzu kontrol edin.",
+        "success"
+      );
+    } catch (err) {
+      console.error("Catch error:", err);
+      showToast(
+        "Şifre sıfırlama e-postası gönderilirken bir hata oluştu",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }; */
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
-      // TODO: Supabase auth entegrasyonu yapılacak
-      // const { data, error } = await supabase.auth.signInWithPassword({
-      //   email,
-      //   password,
-      // })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // Şimdilik basit kontrol (demo amaçlı)
-      if (email === "admin@deryailetisim.com" && password === "admin123") {
-        // Session storage'a kaydet
-        sessionStorage.setItem("isAdminLoggedIn", "true");
-        router.push("/admin/dashboard");
-      } else {
-        setError("E-posta veya şifre hatalı");
+      if (error) {
+        showToast("E-posta veya şifre hatalı", "error");
+        return;
       }
-    } catch (err) {
-      setError("Giriş yapılırken bir hata oluştu");
+
+      if (data.user) {
+        // Session storage'a kaydet (eski sistemle uyumluluk için)
+        sessionStorage.setItem("isAdminLoggedIn", "true");
+        showToast("Başarıyla giriş yapıldı!", "success");
+
+        // Kısa bir gecikme sonrası dashboard'a yönlendir
+        setTimeout(() => {
+          router.push("/admin/dashboard");
+        }, 1000);
+      }
+    } catch {
+      showToast("Giriş yapılırken bir hata oluştu", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-500 to-blue-700 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-300 to-blue-900 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {/* Logo ve Başlık */}
@@ -63,13 +123,6 @@ export default function AdminLoginPage() {
             </h1>
             <p className="text-gray-600 mt-2">Derya İletişim Admin Paneli</p>
           </div>
-
-          {/* Hata Mesajı */}
-          {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
 
           {/* Giriş Formu */}
           <form onSubmit={handleLogin} className="space-y-6">
@@ -118,18 +171,28 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Demo Bilgisi */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800">
-              <strong>Demo Giriş Bilgileri:</strong>
-              <br />
-              E-posta: admin@deryailetisim.com
-              <br />
-              Şifre: admin123
-            </p>
-          </div>
+          {/* Şifremi Unuttum Linki - Geçici olarak yoruma alındı */}
+          {/* <div className="mt-4 text-right">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={loading}
+              className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Şifremi Unuttum
+            </button>
+          </div> */}
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
