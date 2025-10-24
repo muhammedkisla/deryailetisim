@@ -29,12 +29,10 @@ export function calculatePrices(
 }
 
 /**
- * Fiyatı Türk Lirası formatında gösterir
+ * Fiyatı Türk Lirası formatında gösterir (TL işareti olmadan)
  */
 export function formatPrice(price: number): string {
   return new Intl.NumberFormat("tr-TR", {
-    style: "currency",
-    currency: "TRY",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);

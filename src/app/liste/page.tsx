@@ -236,7 +236,7 @@ export default function PriceListPage() {
                                 </span>
                               </th>
                               <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
-                                <span className="md:hidden">Kampanya</span>
+                                <span className="md:hidden">KMPNY</span>
                                 <span className="hidden md:inline">
                                   Kampanya
                                 </span>

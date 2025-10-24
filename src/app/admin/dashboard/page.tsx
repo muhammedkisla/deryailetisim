@@ -903,7 +903,7 @@ export default function AdminDashboard() {
                               </span>
                             </th>
                             <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[14%] md:w-[12%]">
-                              <span className="md:hidden">Kmp</span>
+                              <span className="md:hidden">KMPNY</span>
                               <span className="hidden md:inline">Kampanya</span>
                             </th>
                             <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
