@@ -29,17 +29,9 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      console.log("Şifre sıfırlama e-postası gönderiliyor:", email);
-      console.log(
-        "Redirect URL:",
-        `${window.location.origin}/admin/reset-password`
-      );
-
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/admin/reset-password`,
       });
-
-      console.log("Supabase response:", { data, error });
 
       if (error) {
         console.error("Supabase error:", error);
