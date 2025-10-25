@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Phone } from "@/types";
+import { Phone, InstallmentCampaign } from "@/types";
 import {
   getAllPhones,
   addPhone,
@@ -10,6 +10,11 @@ import {
   deletePhone,
   subscribeToAllPhones,
   supabase,
+  getInstallmentCampaigns,
+  addInstallmentCampaign,
+  updateInstallmentCampaign,
+  deleteInstallmentCampaign,
+  subscribeToInstallmentCampaigns,
 } from "@/lib/supabase";
 import { formatPrice, calculatePrices } from "@/lib/priceCalculator";
 import { phoneColors, getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
@@ -19,11 +24,20 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 export default function AdminDashboard() {
   const router = useRouter();
   const [phones, setPhones] = useState<Phone[]>([]);
+  const [installmentCampaigns, setInstallmentCampaigns] = useState<
+    InstallmentCampaign[]
+  >([]);
   const [isAddingPhone, setIsAddingPhone] = useState(false);
   const [editingPhone, setEditingPhone] = useState<Phone | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+
+  // Taksit yönetimi için state'ler
+  const [editingInstallment, setEditingInstallment] =
+    useState<InstallmentCampaign | null>(null);
+  const [bankName, setBankName] = useState("");
+  const [installmentDescription, setInstallmentDescription] = useState("");
 
   // Toast notification state
   const [toast, setToast] = useState<{
@@ -50,7 +64,6 @@ export default function AdminDashboard() {
     cashPrice: "",
     singlePaymentRate: "0.97",
     installmentRate: "0.93",
-    installmentCampaign: "",
     stock: true,
   });
 
@@ -72,8 +85,12 @@ export default function AdminDashboard() {
   };
 
   const loadPhones = async () => {
-    const data = await getAllPhones();
-    setPhones(data);
+    const [phonesData, campaignsData] = await Promise.all([
+      getAllPhones(),
+      getInstallmentCampaigns(),
+    ]);
+    setPhones(phonesData);
+    setInstallmentCampaigns(campaignsData);
   };
 
   const resetForm = useCallback(() => {
@@ -84,7 +101,6 @@ export default function AdminDashboard() {
       cashPrice: "",
       singlePaymentRate: "0.97",
       installmentRate: "0.93",
-      installmentCampaign: "",
       stock: true,
     });
     setIsAddingPhone(false);
@@ -93,7 +109,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    let unsubscribe: (() => void) | null = null;
+    let unsubscribePhones: (() => void) | null = null;
+    let unsubscribeCampaigns: (() => void) | null = null;
 
     // Supabase Auth kontrolü
     const checkAuth = async () => {
@@ -110,13 +127,13 @@ export default function AdminDashboard() {
         }
       }
 
-      // Telefonları yükle
+      // Verileri yükle
       timeoutId = setTimeout(() => {
         loadPhones();
       }, 0);
 
-      // Real-time subscription - Admin için tüm telefonları göster
-      unsubscribe = subscribeToAllPhones((updater) => {
+      // Real-time subscription - Telefonlar
+      unsubscribePhones = subscribeToAllPhones((updater) => {
         setPhones((prev) => {
           const updated = updater(prev);
 
@@ -130,6 +147,11 @@ export default function AdminDashboard() {
           return updated;
         });
       });
+
+      // Real-time subscription - Taksit kampanyaları
+      unsubscribeCampaigns = subscribeToInstallmentCampaigns((updater) => {
+        setInstallmentCampaigns((prev) => updater(prev));
+      });
     };
 
     checkAuth();
@@ -137,7 +159,8 @@ export default function AdminDashboard() {
     // Cleanup
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
-      if (unsubscribe) unsubscribe();
+      if (unsubscribePhones) unsubscribePhones();
+      if (unsubscribeCampaigns) unsubscribeCampaigns();
     };
   }, [router, editingPhone, resetForm]);
 
@@ -196,7 +219,6 @@ export default function AdminDashboard() {
       cashPrice: cashPriceNumber,
       singlePaymentRate: singleRateNum,
       installmentRate: installmentRateNum,
-      installmentCampaign: formData.installmentCampaign.trim() || undefined,
       stock: formData.stock,
     };
 
@@ -248,7 +270,6 @@ export default function AdminDashboard() {
       cashPrice: phone.cashPrice.toString(),
       singlePaymentRate: String(phone.singlePaymentRate),
       installmentRate: String(phone.installmentRate),
-      installmentCampaign: phone.installmentCampaign || "",
       stock: phone.stock,
     });
     setIsAddingPhone(true);
@@ -285,6 +306,91 @@ export default function AdminDashboard() {
           }, 500);
         } else {
           showToast("Telefon silinirken bir hata oluştu!", "error");
+        }
+      },
+    });
+  };
+
+  // Taksit yönetimi fonksiyonları
+  const handleEditInstallment = (campaign: InstallmentCampaign) => {
+    setEditingInstallment(campaign);
+    setBankName(campaign.bank_name);
+    setInstallmentDescription(campaign.installment_description);
+  };
+
+  const handleSaveInstallment = async () => {
+    if (!editingInstallment) return;
+
+    if (!bankName.trim() || !installmentDescription.trim()) {
+      showToast("Banka adı ve taksit açıklaması gereklidir!", "error");
+      return;
+    }
+
+    try {
+      await updateInstallmentCampaign(editingInstallment.id, {
+        bank_name: bankName.trim(),
+        installment_description: installmentDescription.trim(),
+      });
+
+      showToast("Taksit bilgisi başarıyla güncellendi!", "success");
+      setEditingInstallment(null);
+      setBankName("");
+      setInstallmentDescription("");
+
+      // Verileri yeniden yükle
+      setTimeout(() => {
+        loadPhones();
+      }, 500);
+    } catch (error) {
+      console.error("Taksit bilgisi güncellenirken hata:", error);
+      showToast("Taksit bilgisi güncellenirken bir hata oluştu!", "error");
+    }
+  };
+
+  const handleAddInstallment = async () => {
+    if (!bankName.trim() || !installmentDescription.trim()) {
+      showToast("Banka adı ve taksit açıklaması gereklidir!", "error");
+      return;
+    }
+
+    try {
+      await addInstallmentCampaign({
+        bank_name: bankName.trim(),
+        installment_description: installmentDescription.trim(),
+      });
+
+      showToast("Taksit bilgisi başarıyla eklendi!", "success");
+      setBankName("");
+      setInstallmentDescription("");
+
+      // Verileri yeniden yükle
+      setTimeout(() => {
+        loadPhones();
+      }, 500);
+    } catch (error) {
+      console.error("Taksit bilgisi eklenirken hata:", error);
+      showToast("Taksit bilgisi eklenirken bir hata oluştu!", "error");
+    }
+  };
+
+  const handleDeleteInstallment = async (campaign: InstallmentCampaign) => {
+    setConfirmDialog({
+      title: "Taksit Bilgisini Sil",
+      message: `"${campaign.bank_name}" bankasının taksit bilgisini silmek istediğinizden emin misiniz?`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        try {
+          await deleteInstallmentCampaign(campaign.id);
+
+          showToast("Taksit bilgisi başarıyla silindi!", "success");
+
+          // Verileri yeniden yükle
+          setTimeout(() => {
+            loadPhones();
+          }, 500);
+        } catch (error) {
+          console.error("Taksit bilgisi silinirken hata:", error);
+          showToast("Taksit bilgisi silinirken bir hata oluştu!", "error");
         }
       },
     });
@@ -671,32 +777,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Taksit Kampanya Bilgisi Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  💳 Taksit Kampanya Bilgisi (Opsiyonel)
-                </label>
-                <input
-                  type="text"
-                  value={formData.installmentCampaign}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      installmentCampaign: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="NOT: Banka adı - taksit sayısı aralarına VİRGÜL koymak önemli!   Örn: Ziraat 4-6-12, Kuveyt 5"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Hangi bankaların kartlarıyla kaç taksit yapılabileceğini
-                  belirtin (Örn: &quot;Ziraat 4-6-12, Kuveyt 5&quot;)
-                </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  NOT: Banka adı - taksit sayısı aralarına VİRGÜL koymak önemli!
-                </p>
-              </div>
-
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -898,33 +978,33 @@ export default function AdminDashboard() {
                         {/* Mobil: 7 sütun (Stok gizli), Desktop: 8 sütun */}
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[22%] md:w-[20%]">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[25%] md:w-[22%]">
                               Model
                             </th>
                             <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[12%] md:w-[10%]">
                               Renk
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[15%] md:w-[12%]">
                               Nakit
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[15%] md:w-[12%]">
                               <span className="md:hidden">Tek Çekim</span>
                               <span className="hidden md:inline">
                                 Tek Çekim
                               </span>
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[14%] md:w-[12%]">
-                              <span className="md:hidden">KMPNY</span>
-                              <span className="hidden md:inline">Kampanya</span>
-                            </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[11%]">
-                              <span className="md:hidden">Taksit</span>
-                              <span className="hidden md:inline">Taksit</span>
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-left text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[15%] md:w-[12%]">
+                              <span className="md:hidden">
+                                Kampanyalı Taksit
+                              </span>
+                              <span className="hidden md:inline">
+                                Kampanyalı Taksit
+                              </span>
                             </th>
                             <th className="px-1 py-1 md:px-2 md:py-1.5 text-center text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight hidden md:table-cell">
                               Stok
                             </th>
-                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[13%] md:w-[18%]">
+                            <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[9px] md:text-xs font-medium text-gray-500 uppercase tracking-tight w-[18%] md:w-[20%]">
                               <span className="hidden md:inline">İşlemler</span>
                             </th>
                           </tr>
@@ -974,26 +1054,6 @@ export default function AdminDashboard() {
                                 <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-blue-800">
                                   {formatPrice(prices.singlePayment)}
                                 </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5">
-                                  {phone.installmentCampaign ? (
-                                    <div className="text-[10px] leading-tight text-red-700">
-                                      {phone.installmentCampaign
-                                        .split(",")
-                                        .map((item, idx) => (
-                                          <div
-                                            key={idx}
-                                            className="bg-red-50 px-1 py-0.5 mb-0.5 rounded border border-red-200 inline-block mr-1"
-                                          >
-                                            {item.trim()}
-                                          </div>
-                                        ))}
-                                    </div>
-                                  ) : (
-                                    <span className="text-gray-400 italic text-xs">
-                                      -
-                                    </span>
-                                  )}
-                                </td>
                                 <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-purple-800">
                                   {formatPrice(prices.installment)}
                                 </td>
@@ -1012,13 +1072,13 @@ export default function AdminDashboard() {
                                   <div className="flex flex-col md:flex-row md:justify-end gap-1.5 md:gap-2">
                                     <button
                                       onClick={() => handleEdit(phone)}
-                                      className="text-red-600 hover:text-red-900 font-medium py-1"
+                                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition-colors"
                                     >
                                       Düzenle
                                     </button>
                                     <button
                                       onClick={() => handleDelete(phone.id)}
-                                      className="text-red-600 hover:text-red-900 font-medium py-1"
+                                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors"
                                     >
                                       Sil
                                     </button>
@@ -1035,6 +1095,182 @@ export default function AdminDashboard() {
               })()}
             </div>
           )}
+        </div>
+
+        {/* Taksit Bilgileri Yönetimi */}
+        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden mt-8">
+          <div className="px-4 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-800">
+              Taksit Bilgileri Yönetimi
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Banka taksit kampanya bilgilerini düzenleyin
+            </p>
+          </div>
+
+          <div className="p-4">
+            {/* Mevcut Taksit Bilgileri */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Mevcut Taksit Bilgileri
+              </h3>
+              <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-200 border-b border-gray-300">
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                        Banka Adı
+                      </th>
+                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                        Taksit Açıklaması
+                      </th>
+                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase w-24">
+                        İşlemler
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {installmentCampaigns.map((campaign) => (
+                      <tr
+                        key={campaign.id}
+                        className="hover:bg-gray-100 transition-colors"
+                      >
+                        <td className="px-3 py-2 text-xs font-medium text-gray-900">
+                          {editingInstallment?.id === campaign.id ? (
+                            <input
+                              type="text"
+                              value={bankName}
+                              onChange={(e) => setBankName(e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="Banka adı..."
+                            />
+                          ) : (
+                            campaign.bank_name
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-700">
+                          {editingInstallment?.id === campaign.id ? (
+                            <input
+                              type="text"
+                              value={installmentDescription}
+                              onChange={(e) =>
+                                setInstallmentDescription(e.target.value)
+                              }
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white text-gray-900 placeholder-gray-500"
+                              placeholder="Taksit açıklaması..."
+                            />
+                          ) : (
+                            campaign.installment_description
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          {editingInstallment?.id === campaign.id ? (
+                            <div className="flex gap-1 justify-center">
+                              <button
+                                onClick={handleSaveInstallment}
+                                className="text-green-600 hover:text-green-800 text-xs px-2 py-1"
+                                title="Kaydet"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingInstallment(null);
+                                  setBankName("");
+                                  setInstallmentDescription("");
+                                }}
+                                className="text-gray-600 hover:text-gray-800 text-xs px-2 py-1"
+                                title="İptal"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2 justify-center">
+                              <button
+                                onClick={() => handleEditInstallment(campaign)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition-colors"
+                                title="Düzenle"
+                              >
+                                Düzenle
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteInstallment(campaign)
+                                }
+                                className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors"
+                                title="Sil"
+                              >
+                                Sil
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {installmentCampaigns.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-sm">Henüz taksit bilgisi eklenmemiş</p>
+                </div>
+              )}
+            </div>
+
+            {/* Yeni Taksit Bilgisi Ekleme */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Yeni Taksit Bilgisi Ekle
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Banka Adı
+                  </label>
+                  <input
+                    type="text"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white text-gray-900 placeholder-gray-500"
+                    placeholder="Örn: Ziraat Bankası"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Taksit Açıklaması
+                  </label>
+                  <input
+                    type="text"
+                    value={installmentDescription}
+                    onChange={(e) => setInstallmentDescription(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white text-gray-900 placeholder-gray-500"
+                    placeholder="Örn: 3-6-9-12 ay taksit"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Hangi taksit seçeneklerinin mevcut olduğunu belirtin
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddInstallment}
+                    className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700"
+                  >
+                    Ekle
+                  </button>
+                  <button
+                    onClick={() => {
+                      setBankName("");
+                      setInstallmentDescription("");
+                    }}
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-400"
+                  >
+                    Temizle
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 

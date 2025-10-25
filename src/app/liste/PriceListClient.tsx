@@ -3,8 +3,13 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Footer from "@/components/Footer";
-import { Phone } from "@/types";
-import { getPhones, subscribeToPhones } from "@/lib/supabase";
+import { Phone, InstallmentCampaign } from "@/types";
+import {
+  getPhones,
+  subscribeToPhones,
+  getInstallmentCampaigns,
+  subscribeToInstallmentCampaigns,
+} from "@/lib/supabase";
 import { calculatePrices, formatPrice } from "@/lib/priceCalculator";
 import { getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
 
@@ -34,6 +39,9 @@ const bankAccounts = [
 
 export default function PriceListClient() {
   const [phones, setPhones] = useState<Phone[]>([]);
+  const [installmentCampaigns, setInstallmentCampaigns] = useState<
+    InstallmentCampaign[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentDate] = useState(new Date().toLocaleDateString("tr-TR"));
@@ -50,42 +58,68 @@ export default function PriceListClient() {
   };
 
   useEffect(() => {
-    let unsubscribe = () => {};
+    let unsubscribePhones = () => {};
+    let unsubscribeCampaigns = () => {};
 
     (async () => {
       try {
         // İlk yükleme
-        const data = await getPhones();
-        setPhones(data);
+        const [phonesData, campaignsData] = await Promise.all([
+          getPhones(),
+          getInstallmentCampaigns(),
+        ]);
+        setPhones(phonesData);
+        setInstallmentCampaigns(campaignsData);
         setLoading(false);
 
-        // Real-time subscription - Artımlı güncelleme
-        // Her event'te sadece değişen kaydı günceller
-        unsubscribe = subscribeToPhones((updater) => {
+        // Real-time subscription - Telefonlar
+        unsubscribePhones = subscribeToPhones((updater) => {
           setPhones((prev) => updater(prev));
         });
+
+        // Real-time subscription - Taksit kampanyaları
+        unsubscribeCampaigns = subscribeToInstallmentCampaigns((updater) => {
+          setInstallmentCampaigns((prev) => updater(prev));
+        });
       } catch (error) {
-        console.error("Telefonlar yüklenirken hata:", error);
+        console.error("Veriler yüklenirken hata:", error);
         setLoading(false);
       }
     })();
 
     // Yedek güncelleme - Her 30 saniyede bir
     const pollingInterval = setInterval(async () => {
-      const data = await getPhones();
-      setPhones(data);
+      try {
+        const [phonesData, campaignsData] = await Promise.all([
+          getPhones(),
+          getInstallmentCampaigns(),
+        ]);
+        setPhones(phonesData);
+        setInstallmentCampaigns(campaignsData);
+      } catch (error) {
+        console.error("Yedek güncelleme hatası:", error);
+      }
     }, 30000);
 
     // Sayfa focus olduğunda yenile
     const handleFocus = async () => {
-      const data = await getPhones();
-      setPhones(data);
+      try {
+        const [phonesData, campaignsData] = await Promise.all([
+          getPhones(),
+          getInstallmentCampaigns(),
+        ]);
+        setPhones(phonesData);
+        setInstallmentCampaigns(campaignsData);
+      } catch (error) {
+        console.error("Focus güncelleme hatası:", error);
+      }
     };
     window.addEventListener("focus", handleFocus);
 
     // Cleanup
     return () => {
-      unsubscribe();
+      unsubscribePhones();
+      unsubscribeCampaigns();
       clearInterval(pollingInterval);
       window.removeEventListener("focus", handleFocus);
     };
@@ -212,12 +246,11 @@ export default function PriceListClient() {
                       <div className="overflow-x-auto">
                         <table className="w-full table-fixed">
                           <colgroup>
-                            <col className="w-[30%]" />
-                            <col className="w-[14%]" />
-                            <col className="w-[14%]" />
-                            <col className="w-[14%]" />
-                            <col className="w-[14%]" />
-                            <col className="w-[14%]" />
+                            <col className="w-[35%]" />
+                            <col className="w-[15%]" />
+                            <col className="w-[15%]" />
+                            <col className="w-[15%]" />
+                            <col className="w-[20%]" />
                           </colgroup>
                           <thead>
                             <tr className="bg-gray-100 border-b border-gray-300">
@@ -238,14 +271,12 @@ export default function PriceListClient() {
                                 </span>
                               </th>
                               <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
-                                <span className="md:hidden">KMPNY</span>
-                                <span className="hidden md:inline">
-                                  Kampanya
+                                <span className="md:hidden">
+                                  Kampanyalı Taksit
                                 </span>
-                              </th>
-                              <th className="px-1 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-bold text-gray-700 uppercase">
-                                <span className="md:hidden">Taksit</span>
-                                <span className="hidden md:inline">Taksit</span>
+                                <span className="hidden md:inline">
+                                  Kampanyalı Taksit
+                                </span>
                               </th>
                             </tr>
                           </thead>
@@ -290,28 +321,6 @@ export default function PriceListClient() {
                                   <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-blue-800">
                                     {formatPrice(prices.singlePayment)}
                                   </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5">
-                                    {phone.installmentCampaign ? (
-                                      <div className="text-[9px] md:text-[10px] leading-tight text-red-700 flex flex-wrap justify-end gap-0.5">
-                                        {phone.installmentCampaign
-                                          .split(",")
-                                          .map((item, idx) => (
-                                            <div
-                                              key={idx}
-                                              className="bg-red-50 px-1 py-0.5 rounded border border-red-200"
-                                            >
-                                              {item.trim()}
-                                            </div>
-                                          ))}
-                                      </div>
-                                    ) : (
-                                      <div className="text-right">
-                                        <span className="text-gray-400 italic text-xs">
-                                          -
-                                        </span>
-                                      </div>
-                                    )}
-                                  </td>
                                   <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-purple-800">
                                     {formatPrice(prices.installment)}
                                   </td>
@@ -325,6 +334,49 @@ export default function PriceListClient() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Taksit Bilgileri */}
+            <div className="p-0.5 md:p-4 border-t border-gray-200">
+              <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 text-center">
+                Taksit Bilgileri
+              </h2>
+              <div className="max-w-3xl mx-auto">
+                <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-200 border-b border-gray-300">
+                        <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                          Banka Adı
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                          Taksit Açıklaması
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {installmentCampaigns.map((campaign) => (
+                        <tr
+                          key={campaign.id}
+                          className="hover:bg-gray-100 transition-colors"
+                        >
+                          <td className="px-3 py-2 text-xs font-medium text-gray-900">
+                            {campaign.bank_name}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            {campaign.installment_description}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {installmentCampaigns.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">Henüz taksit bilgisi eklenmemiş</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Hesap Numaralarımız */}

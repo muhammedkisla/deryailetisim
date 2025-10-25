@@ -13,7 +13,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Supabase Database Functions
-import { Phone } from "@/types";
+import { Phone, InstallmentCampaign } from "@/types";
 
 // Supabase'den gelen ham veri tipi
 interface DbPhone {
@@ -386,3 +386,138 @@ export const mockPhones = [
     updatedAt: new Date().toISOString(),
   },
 ];
+
+// ===== TAKSİT KAMPANYALARI FONKSİYONLARI =====
+
+// Taksit kampanyalarını getir
+export async function getInstallmentCampaigns(): Promise<
+  InstallmentCampaign[]
+> {
+  try {
+    const { data, error } = await supabase
+      .from("installment_campaigns")
+      .select("*")
+      .order("bank_name", { ascending: true });
+
+    if (error) {
+      console.error("Taksit kampanyaları yüklenirken hata:", error);
+      // Tablo yoksa boş array döndür
+      if (
+        error.code === "PGRST116" ||
+        error.message.includes(
+          'relation "installment_campaigns" does not exist'
+        )
+      ) {
+        console.warn(
+          "installment_campaigns tablosu henüz oluşturulmamış. Boş array döndürülüyor."
+        );
+        return [];
+      }
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Taksit kampanyaları yüklenirken beklenmeyen hata:", error);
+    return [];
+  }
+}
+
+// Taksit kampanyası ekle
+export async function addInstallmentCampaign(
+  campaign: Omit<InstallmentCampaign, "id" | "created_at" | "updated_at">
+): Promise<boolean> {
+  try {
+    const { error } = await supabase.from("installment_campaigns").insert({
+      bank_name: campaign.bank_name,
+      installment_description: campaign.installment_description,
+    });
+
+    if (error) {
+      console.error("Taksit kampanyası eklenirken hata:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Taksit kampanyası eklenirken beklenmeyen hata:", error);
+    return false;
+  }
+}
+
+// Taksit kampanyası güncelle
+export async function updateInstallmentCampaign(
+  id: string,
+  campaign: Partial<
+    Omit<InstallmentCampaign, "id" | "created_at" | "updated_at">
+  >
+): Promise<boolean> {
+  const { error } = await supabase
+    .from("installment_campaigns")
+    .update({
+      bank_name: campaign.bank_name,
+      installment_description: campaign.installment_description,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Taksit kampanyası güncellenirken hata:", error);
+    return false;
+  }
+
+  return true;
+}
+
+// Taksit kampanyası sil
+export async function deleteInstallmentCampaign(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from("installment_campaigns")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Taksit kampanyası silinirken hata:", error);
+    return false;
+  }
+
+  return true;
+}
+
+// Taksit kampanyaları için real-time subscription
+export function subscribeToInstallmentCampaigns(
+  callback: (
+    updater: (prev: InstallmentCampaign[]) => InstallmentCampaign[]
+  ) => void
+): () => void {
+  try {
+    const subscription = supabase
+      .channel("installment_campaigns_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "installment_campaigns",
+        },
+        async () => {
+          try {
+            // Değişiklik olduğunda tüm veriyi yeniden yükle
+            const data = await getInstallmentCampaigns();
+            callback(() => data);
+          } catch (error) {
+            console.error("Real-time subscription'da hata:", error);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  } catch (error) {
+    console.error("Real-time subscription oluşturulurken hata:", error);
+    // Boş unsubscribe fonksiyonu döndür
+    return () => {};
+  }
+}

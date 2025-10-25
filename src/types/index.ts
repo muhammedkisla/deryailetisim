@@ -35,3 +35,12 @@ export interface ContactInfo {
   address: string;
   workingHours: string;
 }
+
+// Taksit kampanya bilgileri
+export interface InstallmentCampaign {
+  id: string;
+  bank_name: string;
+  installment_description: string;
+  created_at: string;
+  updated_at: string;
+}
