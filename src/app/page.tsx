@@ -42,7 +42,7 @@ export default function Home() {
             <div className="flex justify-center mt-4">
               <Link
                 href="#iletisim"
-                className="bg-white/10 text-white border border-white/30 px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold hover:bg-white/20 transition-all duration-200 shadow-md"
+                className="bg-white/10 text-white border border-red-600/30 px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold hover:bg-white/20 transition-all duration-200 shadow-md"
               >
                 İletişime Geç
               </Link>
@@ -93,8 +93,8 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Konya'nın En Uygun Telefon Noktası */}
-                <div className="bg-linear-to-br from-green-50 to-green-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-green-200">
-                  <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-linear-to-br from-red-50 to-red-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-red-200">
+                  <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
                       className="w-8 h-8 text-white"
                       fill="none"
@@ -124,8 +124,8 @@ export default function Home() {
                 </div>
 
                 {/* Taksit İmkanı */}
-                <div className="bg-linear-to-br from-green-50 to-green-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-green-200">
-                  <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-linear-to-br from-red-50 to-red-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-red-200">
+                  <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
                       className="w-8 h-8 text-white"
                       fill="none"
@@ -149,8 +149,8 @@ export default function Home() {
                 </div>
 
                 {/* Kargo */}
-                <div className="bg-linear-to-br from-green-50 to-green-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-green-200">
-                  <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-linear-to-br from-red-50 to-red-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-red-200">
+                  <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
                       className="w-8 h-8 text-white"
                       fill="none"
@@ -174,8 +174,8 @@ export default function Home() {
                 </div>
 
                 {/* 2. El ve Tamir */}
-                <div className="bg-linear-to-br from-green-50 to-green-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-green-200">
-                  <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-linear-to-br from-red-50 to-red-100 rounded-xl p-6 text-center hover:shadow-xl transition-shadow duration-300 border border-red-200">
+                  <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
                       className="w-8 h-8 text-white"
                       fill="none"
@@ -237,20 +237,20 @@ export default function Home() {
                   seçenekleri ile alışverişinizi kolaylaştırıyoruz.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                  <div className="text-center p-4 bg-red-50 rounded-lg">
+                    <div className="text-3xl font-bold text-red-600 mb-2">
                       10+
                     </div>
                     <div className="text-gray-700">Yıllık Deneyim</div>
                   </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                  <div className="text-center p-4 bg-red-50 rounded-lg">
+                    <div className="text-3xl font-bold text-red-600 mb-2">
                       1000+
                     </div>
                     <div className="text-gray-700">Mutlu Müşteri</div>
                   </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                  <div className="text-center p-4 bg-red-50 rounded-lg">
+                    <div className="text-3xl font-bold text-red-600 mb-2">
                       100%
                     </div>
                     <div className="text-gray-700">Güvenilir Hizmet</div>
@@ -274,9 +274,9 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-lg">
+                      <div className="bg-red-100 p-3 rounded-lg">
                         <svg
-                          className="w-6 h-6 text-blue-600"
+                          className="w-6 h-6 text-red-600"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -296,7 +296,7 @@ export default function Home() {
                         <p className="text-gray-600">
                           <a
                             href="tel:+905373470888"
-                            className="hover:text-blue-600 transition-colors"
+                            className="hover:text-red-600 transition-colors"
                           >
                             +90 (537) 347 08 88
                           </a>
@@ -305,9 +305,9 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-lg">
+                      <div className="bg-red-100 p-3 rounded-lg">
                         <svg
-                          className="w-6 h-6 text-blue-600"
+                          className="w-6 h-6 text-red-600"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -327,7 +327,7 @@ export default function Home() {
                         <p className="text-gray-600">
                           <a
                             href="mailto:info@deryailetisim.com"
-                            className="hover:text-blue-600 transition-colors"
+                            className="hover:text-red-600 transition-colors"
                           >
                             info@deryailetisim.com
                           </a>
@@ -336,9 +336,9 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-lg">
+                      <div className="bg-red-100 p-3 rounded-lg">
                         <svg
-                          className="w-6 h-6 text-blue-600"
+                          className="w-6 h-6 text-red-600"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -371,9 +371,9 @@ export default function Home() {
 
                   <div className="space-y-6">
                     <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-lg">
+                      <div className="bg-red-100 p-3 rounded-lg">
                         <svg
-                          className="w-6 h-6 text-blue-600"
+                          className="w-6 h-6 text-red-600"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -397,7 +397,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 p-6 rounded-lg">
+                    <div className="bg-red-50 p-6 rounded-lg">
                       <h3 className="font-semibold text-gray-800 mb-2">
                         Bizi Ziyaret Edin
                       </h3>

@@ -81,12 +81,12 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-500 to-blue-700 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-red-500 to-red-700 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {/* Logo ve Başlık */}
           <div className="text-center mb-8">
-            <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <div className="bg-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8"
                 fill="none"
@@ -121,7 +121,7 @@ function ResetPasswordContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="En az 6 karakter"
               />
             </div>
@@ -140,7 +140,7 @@ function ResetPasswordContent() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Şifrenizi tekrar girin"
               />
             </div>
@@ -148,7 +148,7 @@ function ResetPasswordContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Güncelleniyor..." : "Şifreyi Güncelle"}
             </button>
@@ -159,7 +159,7 @@ function ResetPasswordContent() {
             <button
               type="button"
               onClick={() => router.push("/admin/login")}
-              className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              className="text-sm text-red-600 hover:text-red-800 hover:underline transition-colors"
             >
               ← Giriş sayfasına dön
             </button>
@@ -183,11 +183,11 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-500 to-blue-700 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-red-500 to-red-700 px-4">
           <div className="max-w-md w-full">
             <div className="bg-white rounded-2xl shadow-2xl p-8">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
                 <p className="mt-4 text-gray-600">Yükleniyor...</p>
               </div>
             </div>

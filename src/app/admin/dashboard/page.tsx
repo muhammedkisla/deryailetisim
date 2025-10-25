@@ -323,9 +323,9 @@ export default function AdminDashboard() {
                   {phones.length}
                 </p>
               </div>
-              <div className="bg-blue-100 p-2 rounded-lg">
+              <div className="bg-red-100 p-2 rounded-lg">
                 <svg
-                  className="w-5 h-5 md:w-6 md:h-6 text-blue-600"
+                  className="w-5 h-5 md:w-6 md:h-6 text-red-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -408,7 +408,7 @@ export default function AdminDashboard() {
                   });
                 }, 100);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-xl font-semibold transition-colors flex items-center space-x-2 shadow-lg"
+              className="bg-red-600 hover:bg-red-700 text-white px-7 py-3.5 rounded-xl font-semibold transition-colors flex items-center space-x-2 shadow-lg"
             >
               <svg
                 className="w-5 h-5"
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
                       });
                     }}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                     placeholder="APPLE, SAMSUNG, XIAOMI..."
                   />
                 </div>
@@ -494,7 +494,7 @@ export default function AdminDashboard() {
                       setFormData({ ...formData, model: e.target.value })
                     }
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                     placeholder="iPhone 15 Pro Max 256GB"
                   />
                 </div>
@@ -509,7 +509,7 @@ export default function AdminDashboard() {
                         key={color.name}
                         className={`flex items-center gap-1 p-1 border rounded cursor-pointer transition-all ${
                           formData.colors.includes(color.name)
-                            ? "border-blue-500 bg-blue-50"
+                            ? "border-red-500 bg-red-50"
                             : "border-gray-300 hover:border-gray-400"
                         }`}
                       >
@@ -517,7 +517,7 @@ export default function AdminDashboard() {
                           type="checkbox"
                           checked={formData.colors.includes(color.name)}
                           onChange={() => handleColorToggle(color.name)}
-                          className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-3 h-3 text-red-600 border-gray-300 rounded focus:ring-red-500"
                         />
                         <span
                           className={`w-3 h-3 rounded-full shrink-0 ${
@@ -567,7 +567,7 @@ export default function AdminDashboard() {
                         })
                       }
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
                       placeholder="65.000"
                     />
                   </div>
@@ -586,7 +586,7 @@ export default function AdminDashboard() {
                         })
                       }
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
                       placeholder="0,97 veya 0,975 (max 4 ondalık)"
                     />
                   </div>
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
                         })
                       }
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
                       placeholder="0,93 veya 0,925 (max 4 ondalık)"
                     />
                   </div>
@@ -614,7 +614,7 @@ export default function AdminDashboard() {
 
               {/* Fiyat Önizlemesi */}
               {formData.cashPrice && (
-                <div className="bg-linear-to-r from-gray-50 to-blue-50 p-4 rounded-lg -mt-3 border border-blue-100">
+                <div className="bg-linear-to-r from-gray-50 to-red-50 p-4 rounded-lg -mt-3 border border-red-100">
                   <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                     <span>📊</span> Fiyat Önizlemesi
                   </h3>
@@ -685,7 +685,7 @@ export default function AdminDashboard() {
                       installmentCampaign: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                   placeholder="NOT: Banka adı - taksit sayısı aralarına VİRGÜL koymak önemli!   Örn: Ziraat 4-6-12, Kuveyt 5"
                 />
                 <p className="mt-1 text-xs text-gray-500">
@@ -705,7 +705,7 @@ export default function AdminDashboard() {
                   onChange={(e) =>
                     setFormData({ ...formData, stock: e.target.checked })
                   }
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                 />
                 <label
                   htmlFor="stock"
@@ -719,7 +719,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-red-600 hover:bg-red-700 text-white px-7 py-3 rounded-xl font-semibold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isSubmitting && (
                     <svg
@@ -777,7 +777,7 @@ export default function AdminDashboard() {
                   placeholder="Marka veya model ara..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
                 <svg
                   className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
@@ -939,7 +939,7 @@ export default function AdminDashboard() {
                             return (
                               <tr
                                 key={phone.id}
-                                className={`hover:bg-blue-50 transition-colors ${
+                                className={`hover:bg-red-50 transition-colors ${
                                   index % 2 === 0 ? "bg-white" : "bg-gray-50"
                                 } ${
                                   phone.stock
@@ -976,13 +976,13 @@ export default function AdminDashboard() {
                                 </td>
                                 <td className="px-1 py-1 md:px-2 md:py-1.5">
                                   {phone.installmentCampaign ? (
-                                    <div className="text-[10px] leading-tight text-blue-700">
+                                    <div className="text-[10px] leading-tight text-red-700">
                                       {phone.installmentCampaign
                                         .split(",")
                                         .map((item, idx) => (
                                           <div
                                             key={idx}
-                                            className="bg-blue-50 px-1 py-0.5 mb-0.5 rounded border border-blue-200 inline-block mr-1"
+                                            className="bg-red-50 px-1 py-0.5 mb-0.5 rounded border border-red-200 inline-block mr-1"
                                           >
                                             {item.trim()}
                                           </div>
@@ -1012,7 +1012,7 @@ export default function AdminDashboard() {
                                   <div className="flex flex-col md:flex-row md:justify-end gap-1.5 md:gap-2">
                                     <button
                                       onClick={() => handleEdit(phone)}
-                                      className="text-blue-600 hover:text-blue-900 font-medium py-1"
+                                      className="text-red-600 hover:text-red-900 font-medium py-1"
                                     >
                                       Düzenle
                                     </button>

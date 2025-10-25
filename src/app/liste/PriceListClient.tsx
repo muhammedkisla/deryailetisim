@@ -131,7 +131,7 @@ export default function PriceListClient() {
           {/* Liste Container */}
           <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
             {/* Liste Header */}
-            <div className="bg-linear-to-r from-blue-600 to-blue-800 text-white p-2 md:p-2.5">
+            <div className="bg-linear-to-r from-red-600 to-red-800 text-white p-2 md:p-2.5">
               <div className="flex items-start justify-between mb-1.5">
                 {/* Sol: Logo */}
                 <div className="flex items-center">
@@ -151,7 +151,7 @@ export default function PriceListClient() {
                   <h1 className="text-xs md:text-sm font-bold mb-0.5">
                     TOPTAN GÜNLÜK FİYAT LİSTESİ
                   </h1>
-                  <p className="text-blue-100 text-sm md:text-sm">
+                  <p className="text-red-100 text-sm md:text-sm">
                     {currentDate}
                   </p>
                 </div>
@@ -188,7 +188,7 @@ export default function PriceListClient() {
             <div className="p-0.5 md:p-3">
               {loading ? (
                 <div className="flex justify-center items-center py-20">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
                 </div>
               ) : filteredPhones.length === 0 ? (
                 <div className="text-center py-20">
@@ -259,7 +259,7 @@ export default function PriceListClient() {
                               return (
                                 <tr
                                   key={phone.id}
-                                  className={`hover:bg-blue-50 transition-colors ${
+                                  className={`hover:bg-red-50 transition-colors ${
                                     index % 2 === 0 ? "bg-white" : "bg-gray-50"
                                   }`}
                                 >
@@ -292,13 +292,13 @@ export default function PriceListClient() {
                                   </td>
                                   <td className="px-1 py-1 md:px-2 md:py-1.5">
                                     {phone.installmentCampaign ? (
-                                      <div className="text-[9px] md:text-[10px] leading-tight text-blue-700 flex flex-wrap justify-end gap-0.5">
+                                      <div className="text-[9px] md:text-[10px] leading-tight text-red-700 flex flex-wrap justify-end gap-0.5">
                                         {phone.installmentCampaign
                                           .split(",")
                                           .map((item, idx) => (
                                             <div
                                               key={idx}
-                                              className="bg-blue-50 px-1 py-0.5 rounded border border-blue-200"
+                                              className="bg-red-50 px-1 py-0.5 rounded border border-red-200"
                                             >
                                               {item.trim()}
                                             </div>
@@ -361,7 +361,7 @@ export default function PriceListClient() {
                           <td className="px-3 py-2 text-center">
                             <button
                               onClick={() => copyToClipboard(account.iban)}
-                              className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 transition-colors relative group"
+                              className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-red-100 transition-colors relative group"
                               title="IBAN'ı Kopyala"
                             >
                               {copiedIban === account.iban ? (
@@ -380,7 +380,7 @@ export default function PriceListClient() {
                                 </svg>
                               ) : (
                                 <svg
-                                  className="w-5 h-5 text-blue-600"
+                                  className="w-5 h-5 text-red-600"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -405,7 +405,7 @@ export default function PriceListClient() {
                     </tbody>
                   </table>
                 </div>
-                <div className="text-center mt-1 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-center mt-1 p-2 bg-red-50 rounded-lg border border-red-200">
                   <p className="text-xs font-semibold text-gray-800">
                     DERYA İLETİŞİM TEKNOLOJİ ÜRÜNLERİ VE ELEKTRONİK PAZARLAMA
                     TİC. LTD. ŞTİ

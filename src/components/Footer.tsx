@@ -4,7 +4,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
+    <footer className="bg-red-800 text-white mt-auto">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
@@ -19,14 +19,14 @@ export default function Footer() {
               />
               <h3 className="text-xl font-bold">Derya İletişim</h3>
             </div>
-            <p className="text-gray-400">
+            <p className="text-white">
               Güvenilir ve kaliteli telefonculuk hizmetleri
             </p>
           </div>
 
           <div>
             <h4 className="text-lg font-semibold mb-4">İletişim</h4>
-            <ul className="space-y-2 text-gray-400">
+            <ul className="space-y-2 text-white">
               <li className="flex items-center space-x-2">
                 <svg
                   className="w-5 h-5"
@@ -64,14 +64,12 @@ export default function Footer() {
 
           <div>
             <h4 className="text-lg font-semibold mb-4">Çalışma Saatleri</h4>
-            <p className="text-gray-400">
-              Pazartesi - Cumartesi: 08:00 - 20:00
-            </p>
-            <p className="text-gray-400">Pazar: 12:00 - 17:30</p>
+            <p className="text-white">Pazartesi - Cumartesi: 08:00 - 20:00</p>
+            <p className="text-white">Pazar: 12:00 - 17:30</p>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+        <div className="border-t border-white mt-8 pt-8 text-center text-white">
           <p>&copy; {currentYear} Derya İletişim. Tüm hakları saklıdır.</p>
         </div>
       </div>

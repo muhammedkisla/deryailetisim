@@ -91,11 +91,11 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-300 to-blue-900 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-red-300 to-red-900 px-4">
       {/* Liste Sayfasına Git Butonu */}
       <Link
         href="/liste"
-        className="absolute top-4 right-4 bg-white/90 hover:bg-white text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg font-medium shadow-lg transition-all duration-200 flex items-center gap-2"
+        className="absolute top-4 right-4 bg-white/90 hover:bg-white text-red-600 hover:text-red-800 px-4 py-2 rounded-lg font-medium shadow-lg transition-all duration-200 flex items-center gap-2"
       >
         <svg
           className="w-4 h-4"
@@ -117,7 +117,7 @@ export default function AdminLoginPage() {
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {/* Logo ve Başlık */}
           <div className="text-center mb-8">
-            <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <div className="bg-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8"
                 fill="none"
@@ -153,7 +153,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="admin@deryailetisim.com"
               />
             </div>
@@ -171,7 +171,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
@@ -179,7 +179,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
             </button>

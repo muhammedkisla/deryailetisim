@@ -70,19 +70,19 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-6 text-gray-700">
               <a
                 href="#hakkimizda"
-                className="hover:text-gray-900 transition-colors"
+                className="hover:text-red-900 transition-colors"
               >
                 Hakkımızda
               </a>
               <a
                 href="#ozellikler"
-                className="hover:text-gray-900 transition-colors"
+                className="hover:text-red-900 transition-colors"
               >
                 Öne Çıkanlar
               </a>
               <a
                 href="#iletisim"
-                className="hover:text-gray-900 transition-colors"
+                className="hover:text-red-900 transition-colors"
               >
                 İletişim
               </a>
@@ -91,7 +91,7 @@ export default function Header() {
             <div className="flex items-center gap-3">
               <a
                 href={telHref}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium shadow hover:shadow-lg hover:brightness-110 transition-all"
+                className="inline-flex items-center gap-2 bg-red-700 text-white px-4 py-2 rounded-xl font-medium shadow hover:shadow-lg hover:brightness-110 transition-all"
               >
                 <svg
                   className="w-4 h-4"
