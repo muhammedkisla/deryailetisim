@@ -240,19 +240,13 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Şifremi Unuttum ve Debug Linkleri */}
-          <div className="mt-4 flex justify-between items-center">
-            <a
-              href="/admin/debug"
-              className="text-sm text-gray-500 hover:text-gray-700 hover:underline transition-colors"
-            >
-              Debug Sayfası
-            </a>
+          {/* Şifremi Unuttum Linki */}
+          <div className="mt-4 flex justify-center items-center">
             <button
               type="button"
               onClick={handleForgotPassword}
               disabled={loading || resetCooldown > 0}
-              className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-sm text-gray-600 hover:text-gray-800 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {resetCooldown > 0
                 ? `Tekrar deneyin (${Math.floor(resetCooldown / 60)}:${(

@@ -32,7 +32,7 @@ function AuthCallbackContent() {
       allParams: Object.fromEntries(searchParams.entries()),
       fullUrl: window.location.href,
       hash: window.location.hash,
-      search: window.location.search
+      search: window.location.search,
     });
 
     async function run() {
@@ -73,15 +73,15 @@ function AuthCallbackContent() {
         // Eski akış: token ile session kurma
         try {
           console.log("Token ile session kuruluyor...");
-          
+
           // Token'ı kullanarak session kur
           // Bu durumda token'ı direkt kullanabiliriz
           console.log("Token:", token);
-          
+
           // Token'ı kullanarak şifre sıfırlama işlemini başlat
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash: token,
-            type: 'recovery'
+            type: "recovery",
           });
 
           if (error) {
