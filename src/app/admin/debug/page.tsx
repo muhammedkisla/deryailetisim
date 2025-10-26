@@ -7,7 +7,30 @@ import Toast, { ToastType } from "@/components/Toast";
 export default function DebugPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<{
+    environment?: string;
+    supabaseUrl?: string;
+    supabaseKey?: string;
+    currentUrl?: string;
+    currentPath?: string;
+    urlParams?: Record<string, string>;
+    productionUrl?: string;
+    calculatedBaseUrl?: string;
+    calculatedRedirectUrl?: string;
+    session?: string;
+    sessionError?: string;
+    timestamp?: string;
+    emailTest?: {
+      success: boolean;
+      data: any;
+      error: {
+        message: string;
+        status: number;
+        name: string;
+      } | null;
+      timestamp: string;
+    };
+  } | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: ToastType;
@@ -107,7 +130,7 @@ export default function DebugPage() {
         timestamp: new Date().toISOString(),
       };
 
-      setDebugInfo((prev) => ({
+      setDebugInfo((prev: any) => ({
         ...prev,
         emailTest: result,
       }));
