@@ -10,3 +10,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 # Supabase Service Role Key (sadece sunucu tarafında kullanılmalı)
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
+# Heartbeat Secret Token (cron-job güvenliği için)
+HEARTBEAT_SECRET=your_random_secret_token_here
+

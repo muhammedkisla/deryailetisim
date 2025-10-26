@@ -9,12 +9,14 @@ Konya'da faaliyet gösteren Derya İletişim cep telefonu mağazası için geli�
 ## 📋 Özellikler
 
 ### 🏠 Ana Sayfa
+
 - **Responsive tasarım** - Mobil ve desktop uyumlu
 - **Modern UI/UX** - Tailwind CSS ile tasarlanmış
 - **Hakkımızda bölümü** - Mağaza bilgileri ve iletişim
 - **Öne çıkan özellikler** - Hizmet tanıtımları
 
 ### 📱 Fiyat Listesi (`/liste`)
+
 - **Telefon listesi** - Marka ve model bazında gruplandırılmış
 - **Renk seçenekleri** - Her telefon için mevcut renkler
 - **Fiyat hesaplama** - Nakit, tek çekim ve taksit fiyatları
@@ -23,6 +25,7 @@ Konya'da faaliyet gösteren Derya İletişim cep telefonu mağazası için geli�
 - **Banka hesap bilgileri** - Havale/EFT bilgileri
 
 ### 🔐 Admin Paneli (`/admin`)
+
 - **Güvenli giriş** - Supabase Auth ile kimlik doğrulama
 - **Şifre sıfırlama** - Email ile şifre yenileme
 - **Telefon yönetimi** - Ekleme, düzenleme, silme
@@ -33,6 +36,7 @@ Konya'da faaliyet gösteren Derya İletişim cep telefonu mağazası için geli�
 ## 🛠️ Teknoloji Stack
 
 ### Frontend
+
 - **Next.js 14** - React framework
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first CSS framework
@@ -40,6 +44,7 @@ Konya'da faaliyet gösteren Derya İletişim cep telefonu mağazası için geli�
 - **Next.js Image** - Optimized image loading
 
 ### Backend & Database
+
 - **Supabase** - Backend-as-a-Service
 - **PostgreSQL** - Database
 - **Supabase Auth** - Authentication
@@ -47,6 +52,7 @@ Konya'da faaliyet gösteren Derya İletişim cep telefonu mağazası için geli�
 - **Row Level Security (RLS)** - Database security
 
 ### Deployment
+
 - **Vercel** - Hosting platform
 - **GitHub** - Version control
 - **Environment Variables** - Configuration management
@@ -78,17 +84,20 @@ src/
 ## 🚀 Kurulum
 
 ### Gereksinimler
-- Node.js 18+ 
+
+- Node.js 18+
 - npm/yarn/pnpm
 - Supabase hesabı
 
 ### 1. Repository'yi klonlayın
+
 ```bash
 git clone https://github.com/muhammedkisla/deryailetisim.git
 cd deryailetisim
 ```
 
 ### 2. Bağımlılıkları yükleyin
+
 ```bash
 npm install
 # veya
@@ -98,13 +107,16 @@ pnpm install
 ```
 
 ### 3. Environment değişkenlerini ayarlayın
+
 `.env.local` dosyası oluşturun:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### 4. Development server'ı başlatın
+
 ```bash
 npm run dev
 # veya
@@ -118,6 +130,7 @@ Uygulama [http://localhost:3000](http://localhost:3000) adresinde çalışacak.
 ## 🗄️ Veritabanı Yapısı
 
 ### `phones` Tablosu
+
 ```sql
 CREATE TABLE phones (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,6 +147,7 @@ CREATE TABLE phones (
 ```
 
 ### `installment_campaigns` Tablosu
+
 ```sql
 CREATE TABLE installment_campaigns (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -147,33 +161,40 @@ CREATE TABLE installment_campaigns (
 ## 🔐 Supabase Konfigürasyonu
 
 ### 1. Authentication Ayarları
+
 - **Site URL:** `https://deryailetisim.vercel.app`
 - **Redirect URLs:**
   - `https://deryailetisim.vercel.app/auth/callback`
   - `http://localhost:3000/auth/callback`
 
 ### 2. Email Templates
+
 - **Reset Password** template'i aktif olmalı
 - Custom HTML template kullanılıyor
 
 ### 3. Row Level Security (RLS)
+
 - `phones` tablosu için RLS politikaları aktif
 - `installment_campaigns` tablosu için RLS politikaları aktif
 
 ## 📱 Admin Paneli Kullanımı
 
 ### Giriş Bilgileri
+
 - Admin paneline erişim için `/admin/login` sayfasını kullanın
 - Şifre sıfırlama için "Şifremi Unuttum" linkini kullanın
 
 ### Telefon Yönetimi
+
 1. **Yeni Telefon Ekle:**
+
    - Marka, model, renkler
    - Nakit fiyat
    - Oranlar (tek çekim/taksit)
    - Stok durumu
 
 2. **Telefon Düzenle:**
+
    - Mevcut telefonları düzenleyin
    - Fiyat güncellemeleri
    - Stok durumu değişiklikleri
@@ -182,7 +203,9 @@ CREATE TABLE installment_campaigns (
    - Onay dialog'u ile güvenli silme
 
 ### Taksit Kampanyası Yönetimi
+
 1. **Banka Kampanyası Ekle:**
+
    - Banka adı
    - Kampanya açıklaması
 
@@ -192,16 +215,19 @@ CREATE TABLE installment_campaigns (
 ## 🎨 UI/UX Özellikleri
 
 ### Renk Paleti
+
 - **Ana renk:** Kırmızı (#DC2626)
 - **İkincil renkler:** Gri tonları
 - **Accent renkler:** Mavi, yeşil
 
 ### Responsive Tasarım
+
 - **Mobile First** yaklaşım
 - **Breakpoints:** sm (640px), md (768px), lg (1024px), xl (1280px)
 - **Flexible grid** sistemi
 
 ### Telefon Renkleri
+
 - 20+ farklı renk seçeneği
 - Renk kodları ve hex değerleri
 - Border kontrolü (açık renkler için)
@@ -209,6 +235,7 @@ CREATE TABLE installment_campaigns (
 ## 🔧 Geliştirme Notları
 
 ### Fiyat Hesaplama
+
 ```typescript
 // Nakit fiyat
 const cashPrice = originalPrice * singlePaymentRate;
@@ -218,11 +245,13 @@ const installmentPrice = originalPrice * installmentRate;
 ```
 
 ### Real-time Updates
+
 - Supabase real-time subscriptions kullanılıyor
 - Telefon listesi otomatik güncelleniyor
 - Taksit kampanyaları canlı güncelleniyor
 
 ### Error Handling
+
 - Toast notifications ile kullanıcı bildirimleri
 - Try-catch blokları ile hata yakalama
 - Console logging ile debug bilgileri
@@ -230,14 +259,37 @@ const installmentPrice = originalPrice * installmentRate;
 ## 🚀 Deployment
 
 ### Vercel Deployment
+
 1. GitHub repository'sini Vercel'e bağlayın
 2. Environment variables'ları ayarlayın
 3. Otomatik deploy aktif
 
 ### Environment Variables
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+HEARTBEAT_SECRET=your_random_secret_token
+```
+
+## ❤️ Heartbeat Sistemi
+
+Supabase'in ücretsiz versiyonu 7 gün kullanılmazsa uyku moduna geçer. Bu sorunu önlemek için bir heartbeat sistemi eklenmiştir.
+
+**Detaylı kurulum için:** [HEARTBEAT_KURULUM.md](./HEARTBEAT_KURULUM.md)
+
+**Kısa Özet:**
+
+1. ✅ API endpoint oluşturuldu: `/api/heartbeat`
+2. ✅ Secret token ile güvenlik sağlandı
+3. ✅ cron-job.org ile otomatik çağrı kurulumu
+4. ✅ Her gün Supabase'e hafif sorgu atılarak aktif tutulur
+
+**Test:**
+
+```bash
+curl "http://localhost:3000/api/heartbeat?token=YOUR_SECRET_TOKEN"
 ```
 
 ## 🐛 Bilinen Sorunlar
@@ -247,6 +299,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ## 🔮 Gelecek Geliştirmeler
 
 ### Önerilen Özellikler
+
 1. **Telefon resimleri** - Supabase Storage entegrasyonu
 2. **Arama/filtreleme** - Telefon arama özelliği
 3. **Excel export** - Fiyat listesi dışa aktarma
@@ -257,18 +310,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ## 👥 Geliştirici Notları
 
 ### Kod Yapısı
+
 - **Component-based** mimari
 - **Custom hooks** kullanımı
 - **TypeScript** strict mode
 - **ESLint** ve **Prettier** konfigürasyonu
 
 ### Performans
+
 - **Next.js Image** optimizasyonu
 - **Lazy loading** implementasyonu
 - **Code splitting** otomatik
 - **Bundle size** optimizasyonu
 
 ### Güvenlik
+
 - **Row Level Security** (RLS)
 - **Input validation**
 - **XSS protection**
@@ -277,6 +333,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ## 📞 İletişim
 
 **Proje Sahibi:** Derya İletişim
+
 - **Telefon:** +90 (537) 347 08 88
 - **Email:** info@deryailetisim.com
 - **Adres:** Şehit Kemal Türkeş Mahallesi, İstanbul Cd. Konaltaş İş Hanı altı no:103/A, 42030 Karatay/Konya
