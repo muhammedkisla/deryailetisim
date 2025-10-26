@@ -101,7 +101,6 @@ export default function DebugPage() {
           ? {
               message: error.message,
               status: error.status,
-              statusText: error.statusText,
               name: error.name,
               details: error.details || null,
               hint: error.hint || null,
