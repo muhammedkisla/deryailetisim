@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Toast, { ToastType } from "@/components/Toast";
 
 function ResetPasswordContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,24 +20,45 @@ function ResetPasswordContent() {
   };
 
   useEffect(() => {
-    // URL'deki access_token ve refresh_token'ı kontrol et
-    const accessToken = searchParams.get("access_token");
-    const refreshToken = searchParams.get("refresh_token");
+    // Yeni akış: Session zaten auth/callback sayfasında kurulmuş olmalı
+    // Sadece session'ın var olup olmadığını kontrol et
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-    if (!accessToken || !refreshToken) {
-      showToast("Geçersiz şifre sıfırlama bağlantısı", "error");
-      setTimeout(() => {
-        router.push("/admin/login");
-      }, 2000);
-      return;
-    }
+        console.log("Reset password - Session kontrolü:", {
+          hasSession: !!session,
+          user: session?.user?.email || "Yok",
+          error: error?.message || "Yok",
+        });
 
-    // Supabase session'ı ayarla
-    supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-  }, [searchParams, router]);
+        if (error || !session) {
+          console.error("Session bulunamadı:", error);
+          showToast(
+            "Geçersiz şifre sıfırlama bağlantısı. Lütfen tekrar deneyin.",
+            "error"
+          );
+          setTimeout(() => {
+            router.push("/admin/login");
+          }, 3000);
+          return;
+        }
+
+        console.log("Session mevcut, şifre sıfırlama formu hazır");
+      } catch (error) {
+        console.error("Session kontrol hatası:", error);
+        showToast("Session kontrolü sırasında hata oluştu", "error");
+        setTimeout(() => {
+          router.push("/admin/login");
+        }, 3000);
+      }
+    };
+
+    checkSession();
+  }, [router]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,12 +86,15 @@ function ResetPasswordContent() {
       }
 
       showToast(
-        "Şifre başarıyla güncellendi! Giriş sayfasına yönlendiriliyorsunuz...",
+        "Şifre başarıyla güncellendi! Güvenlik için çıkış yapılıyor...",
         "success"
       );
 
+      // Güvenlik için kullanıcıyı çıkış yaptır
+      await supabase.auth.signOut();
+
       setTimeout(() => {
-        router.push("/admin/login");
+        router.push("/admin/login?reset=success");
       }, 2000);
     } catch {
       showToast("Şifre güncellenirken bir hata oluştu", "error");

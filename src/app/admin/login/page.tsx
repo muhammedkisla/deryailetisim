@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -11,6 +11,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState(0);
   const [toast, setToast] = useState<{
     message: string;
     type: ToastType;
@@ -20,8 +21,18 @@ export default function AdminLoginPage() {
     setToast({ message, type });
   };
 
-  // Şifre sıfırlama fonksiyonu - Geçici olarak yoruma alındı
-  /* const handleForgotPassword = async () => {
+  // Cooldown timer
+  useEffect(() => {
+    if (resetCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResetCooldown(resetCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resetCooldown]);
+
+  // Şifre sıfırlama fonksiyonu
+  const handleForgotPassword = async () => {
     if (!email.trim()) {
       showToast("Lütfen önce e-posta adresinizi girin", "error");
       return;
@@ -30,33 +41,77 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
+      // Environment'a göre doğru URL'yi belirle
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://deryailetisim.vercel.app"
+          : window.location.origin;
+
+      // Yeni akış: auth/callback sayfasına yönlendir
+      const redirectUrl = `${baseUrl}/auth/callback?next=/admin/reset-password`;
+
+      console.log("Şifre sıfırlama isteği gönderiliyor:", email);
+      console.log("Environment:", process.env.NODE_ENV);
+      console.log("Base URL:", baseUrl);
+      console.log("Redirect URL:", redirectUrl);
+
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/admin/reset-password`,
+        redirectTo: redirectUrl,
       });
 
+      console.log("Supabase response:", { data, error });
+
       if (error) {
-        console.error("Supabase error:", error);
-        showToast(
-          `Şifre sıfırlama e-postası gönderilirken bir hata oluştu: ${error.message}`,
-          "error"
-        );
+        console.error("Supabase error details:", {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+        });
+
+        // Daha detaylı hata mesajları
+        let errorMessage =
+          "Şifre sıfırlama e-postası gönderilirken bir hata oluştu";
+
+        if (error.message.includes("Invalid email")) {
+          errorMessage = "Geçersiz e-posta adresi";
+        } else if (error.message.includes("User not found")) {
+          errorMessage = "Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı";
+        } else if (
+          error.message.includes("rate limit") ||
+          error.status === 429
+        ) {
+          errorMessage =
+            "Çok fazla şifre sıfırlama isteği gönderildi. Lütfen 15-30 dakika bekleyip tekrar deneyin.";
+          // Rate limit durumunda 30 dakika cooldown başlat
+          setResetCooldown(30 * 60); // 30 dakika = 1800 saniye
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "E-posta adresi henüz doğrulanmamış";
+        } else if (error.message.includes("Error sending recovery email")) {
+          errorMessage =
+            "E-posta gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.";
+        } else {
+          errorMessage = `Hata: ${error.message}`;
+        }
+
+        showToast(errorMessage, "error");
         return;
       }
 
+      console.log("Şifre sıfırlama e-postası başarıyla gönderildi");
       showToast(
         "Şifre sıfırlama e-postası gönderildi! E-posta kutunuzu kontrol edin.",
         "success"
       );
     } catch (err) {
-      console.error("Catch error:", err);
+      console.error("Catch error details:", err);
       showToast(
-        "Şifre sıfırlama e-postası gönderilirken bir hata oluştu",
+        "Şifre sıfırlama e-postası gönderilirken beklenmeyen bir hata oluştu",
         "error"
       );
     } finally {
       setLoading(false);
     }
-  }; */
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,17 +240,29 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Şifremi Unuttum Linki - Geçici olarak yoruma alındı */}
-          {/* <div className="mt-4 text-right">
+          {/* Şifremi Unuttum ve Debug Linkleri */}
+          <div className="mt-4 flex justify-between items-center">
+            <a
+              href="/admin/debug"
+              className="text-sm text-gray-500 hover:text-gray-700 hover:underline transition-colors"
+            >
+              Debug Sayfası
+            </a>
             <button
               type="button"
               onClick={handleForgotPassword}
-              disabled={loading}
+              disabled={loading || resetCooldown > 0}
               className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Şifremi Unuttum
+              {resetCooldown > 0
+                ? `Tekrar deneyin (${Math.floor(resetCooldown / 60)}:${(
+                    resetCooldown % 60
+                  )
+                    .toString()
+                    .padStart(2, "0")})`
+                : "Şifremi Unuttum"}
             </button>
-          </div> */}
+          </div>
         </div>
       </div>
 
