@@ -1072,13 +1072,13 @@ export default function AdminDashboard() {
                                   <div className="flex flex-col md:flex-row md:justify-end gap-1.5 md:gap-2">
                                     <button
                                       onClick={() => handleEdit(phone)}
-                                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition-colors"
+                                      className="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded transition-colors"
                                     >
                                       Düzenle
                                     </button>
                                     <button
                                       onClick={() => handleDelete(phone.id)}
-                                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors"
+                                      className="bg-red-400 hover:bg-red-500 text-white text-xs px-3 py-1 rounded transition-colors"
                                     >
                                       Sil
                                     </button>
@@ -1189,7 +1189,7 @@ export default function AdminDashboard() {
                             <div className="flex gap-2 justify-center">
                               <button
                                 onClick={() => handleEditInstallment(campaign)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition-colors"
+                                className="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded transition-colors"
                                 title="Düzenle"
                               >
                                 Düzenle
@@ -1198,7 +1198,7 @@ export default function AdminDashboard() {
                                 onClick={() =>
                                   handleDeleteInstallment(campaign)
                                 }
-                                className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded transition-colors"
+                                className="bg-red-400 hover:bg-red-500 text-white text-xs px-3 py-1 rounded transition-colors"
                                 title="Sil"
                               >
                                 Sil
