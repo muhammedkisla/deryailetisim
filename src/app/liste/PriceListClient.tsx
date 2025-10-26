@@ -233,7 +233,7 @@ export default function PriceListClient() {
                   {brands.map((brand) => (
                     <div
                       key={brand}
-                      className="border border-gray-200 rounded-lg overflow-hidden"
+                      className="border border-red-500 rounded-lg overflow-hidden"
                     >
                       {/* Marka Başlığı */}
                       <div className="bg-linear-to-r from-gray-700 to-gray-500 px-2 py-1">
@@ -342,7 +342,7 @@ export default function PriceListClient() {
                 Taksit Bilgileri
               </h2>
               <div className="max-w-3xl mx-auto">
-                <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                <div className="bg-gray-50 rounded-lg overflow-hidden border border-red-500">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-200 border-b border-gray-300">
@@ -385,7 +385,7 @@ export default function PriceListClient() {
                 Hesap Numaralarımız
               </h2>
               <div className="max-w-3xl mx-auto">
-                <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                <div className="bg-gray-50 rounded-lg overflow-hidden border border-red-500">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-200 border-b border-gray-300">
