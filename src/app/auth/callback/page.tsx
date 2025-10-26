@@ -30,6 +30,9 @@ function AuthCallbackContent() {
       type: type || "❌ Yok",
       next: next,
       allParams: Object.fromEntries(searchParams.entries()),
+      fullUrl: window.location.href,
+      hash: window.location.hash,
+      search: window.location.search
     });
 
     async function run() {
@@ -66,50 +69,41 @@ function AuthCallbackContent() {
             router.replace("/admin/login");
           }, 3000);
         }
-      } else if (type === "recovery") {
-        // Eski akış: hash'ten token'ları al
+      } else if (type === "recovery" && token) {
+        // Eski akış: token ile session kurma
         try {
-          console.log("Hash'ten token'lar alınıyor...");
-          // URL hash'inden access_token ve refresh_token'ı çıkar
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
+          console.log("Token ile session kuruluyor...");
           
-          console.log("Hash params:", {
-            accessToken: accessToken ? "✅ Var" : "❌ Yok",
-            refreshToken: refreshToken ? "✅ Var" : "❌ Yok",
-            hash: window.location.hash
-          });
+          // Token'ı kullanarak session kur
+          // Bu durumda token'ı direkt kullanabiliriz
+          console.log("Token:", token);
           
-          if (!accessToken || !refreshToken) {
-            throw new Error("Hash'te token'lar bulunamadı");
-          }
-
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+          // Token'ı kullanarak şifre sıfırlama işlemini başlat
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery'
           });
 
           if (error) {
-            console.error("Session set error:", error);
+            console.error("Token verification error:", error);
             setErr(error.message);
-            showToast(`Session hatası: ${error.message}`, "error");
+            showToast(`Token doğrulama hatası: ${error.message}`, "error");
             setTimeout(() => {
               router.replace("/admin/login");
             }, 3000);
             return;
           }
 
-          console.log("Session başarıyla kuruldu:", data);
-          showToast("Oturum açıldı, yönlendiriliyorsunuz...", "success");
+          console.log("Token başarıyla doğrulandı:", data);
+          showToast("Token doğrulandı, yönlendiriliyorsunuz...", "success");
 
           setTimeout(() => {
             router.replace(next);
           }, 1000);
         } catch (error) {
-          console.error("Token session error:", error);
-          setErr("Token ile session kurulamadı");
-          showToast("Token ile session kurulamadı", "error");
+          console.error("Token verification error:", error);
+          setErr("Token doğrulanamadı");
+          showToast("Token doğrulanamadı", "error");
           setTimeout(() => {
             router.replace("/admin/login");
           }, 3000);
