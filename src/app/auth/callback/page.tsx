@@ -66,19 +66,23 @@ function AuthCallbackContent() {
             router.replace("/admin/login");
           }, 3000);
         }
-      } else if (token && type === "recovery") {
-        // Eski akış: token ile session kurma
+      } else if (type === "recovery") {
+        // Eski akış: hash'ten token'ları al
         try {
-          console.log("Token ile session kuruluyor...");
-          // URL'den access_token ve refresh_token'ı çıkar
-          const urlParams = new URLSearchParams(
-            window.location.hash.substring(1)
-          );
-          const accessToken = urlParams.get("access_token");
-          const refreshToken = urlParams.get("refresh_token");
-
+          console.log("Hash'ten token'lar alınıyor...");
+          // URL hash'inden access_token ve refresh_token'ı çıkar
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          
+          console.log("Hash params:", {
+            accessToken: accessToken ? "✅ Var" : "❌ Yok",
+            refreshToken: refreshToken ? "✅ Var" : "❌ Yok",
+            hash: window.location.hash
+          });
+          
           if (!accessToken || !refreshToken) {
-            throw new Error("Token'lar bulunamadı");
+            throw new Error("Hash'te token'lar bulunamadı");
           }
 
           const { data, error } = await supabase.auth.setSession({
