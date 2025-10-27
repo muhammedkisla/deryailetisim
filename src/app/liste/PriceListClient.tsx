@@ -290,20 +290,39 @@ export default function PriceListClient() {
                                     </td>
                                     <td className="px-1 py-1 md:px-2 md:py-1.5">
                                       <div className="flex items-center gap-1 flex-wrap">
-                                        {phone.colors.map((color) => (
-                                          <span
-                                            key={color}
-                                            className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
-                                              colorNeedsBorder(color)
-                                                ? "border border-gray-300"
-                                                : ""
-                                            }`}
-                                            style={{
-                                              background: getColorHex(color),
-                                            }}
-                                            title={color}
-                                          ></span>
-                                        ))}
+                                        {phone.colors.map((color) =>
+                                          color === "Çeşitli" ? (
+                                            <div
+                                              key={color}
+                                              className="flex items-center gap-1"
+                                            >
+                                              <span
+                                                className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 border border-gray-300"
+                                                style={{
+                                                  background:
+                                                    getColorHex(color),
+                                                }}
+                                                title={color}
+                                              ></span>
+                                              <span className="text-[10px] text-gray-500 font-medium">
+                                                (Çeşitli)
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <span
+                                              key={color}
+                                              className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
+                                                colorNeedsBorder(color)
+                                                  ? "border border-gray-300"
+                                                  : ""
+                                              }`}
+                                              style={{
+                                                background: getColorHex(color),
+                                              }}
+                                              title={color}
+                                            ></span>
+                                          )
+                                        )}
                                       </div>
                                     </td>
                                     <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-green-800">
