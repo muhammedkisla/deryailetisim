@@ -1010,83 +1010,87 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {phonesByBrand[brand].map((phone, index) => {
-                            const prices = calculatePrices(
-                              phone.cashPrice,
-                              phone.singlePaymentRate,
-                              phone.installmentRate
-                            );
-                            return (
-                              <tr
-                                key={phone.id}
-                                className={`hover:bg-red-50 transition-colors ${
-                                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                                } ${
-                                  phone.stock
-                                    ? "border-r-2 border-r-green-500 md:border-r-0"
-                                    : "border-r-2 border-r-red-500 md:border-r-0"
-                                }`}
-                              >
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs font-medium text-gray-900">
-                                  {phone.model}
-                                </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5">
-                                  <div className="flex items-center gap-1 flex-wrap">
-                                    {phone.colors.map((color) => (
-                                      <span
-                                        key={color}
-                                        className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
-                                          colorNeedsBorder(color)
-                                            ? "border border-gray-300"
-                                            : ""
-                                        }`}
-                                        style={{
-                                          background: getColorHex(color),
-                                        }}
-                                        title={color}
-                                      ></span>
-                                    ))}
-                                  </div>
-                                </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-green-800">
-                                  {formatPrice(prices.cash)}
-                                </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-blue-800">
-                                  {formatPrice(prices.singlePayment)}
-                                </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-purple-800">
-                                  {formatPrice(prices.installment)}
-                                </td>
-                                <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-center hidden md:table-cell">
-                                  {phone.stock ? (
-                                    <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-green-100 text-green-800">
-                                      Var
-                                    </span>
-                                  ) : (
-                                    <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-red-100 text-red-800">
-                                      Yok
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="px-0.5 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-medium">
-                                  <div className="flex flex-col md:flex-row md:justify-end gap-1.5 md:gap-2">
-                                    <button
-                                      onClick={() => handleEdit(phone)}
-                                      className="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded transition-colors"
-                                    >
-                                      Düzenle
-                                    </button>
-                                    <button
-                                      onClick={() => handleDelete(phone.id)}
-                                      className="bg-red-400 hover:bg-red-500 text-white text-xs px-3 py-1 rounded transition-colors"
-                                    >
-                                      Sil
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {phonesByBrand[brand]
+                            .sort((a, b) =>
+                              b.model.localeCompare(a.model, "tr")
+                            )
+                            .map((phone, index) => {
+                              const prices = calculatePrices(
+                                phone.cashPrice,
+                                phone.singlePaymentRate,
+                                phone.installmentRate
+                              );
+                              return (
+                                <tr
+                                  key={phone.id}
+                                  className={`hover:bg-red-50 transition-colors ${
+                                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                  } ${
+                                    phone.stock
+                                      ? "border-r-2 border-r-green-500 md:border-r-0"
+                                      : "border-r-2 border-r-red-500 md:border-r-0"
+                                  }`}
+                                >
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs font-medium text-gray-900">
+                                    {phone.model}
+                                  </td>
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5">
+                                    <div className="flex items-center gap-1 flex-wrap">
+                                      {phone.colors.map((color) => (
+                                        <span
+                                          key={color}
+                                          className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
+                                            colorNeedsBorder(color)
+                                              ? "border border-gray-300"
+                                              : ""
+                                          }`}
+                                          style={{
+                                            background: getColorHex(color),
+                                          }}
+                                          title={color}
+                                        ></span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-green-800">
+                                    {formatPrice(prices.cash)}
+                                  </td>
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-blue-800">
+                                    {formatPrice(prices.singlePayment)}
+                                  </td>
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-xs font-semibold text-purple-800">
+                                    {formatPrice(prices.installment)}
+                                  </td>
+                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-center hidden md:table-cell">
+                                    {phone.stock ? (
+                                      <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Var
+                                      </span>
+                                    ) : (
+                                      <span className="px-1 md:px-1.5 inline-flex text-[9px] md:text-[10px] leading-4 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Yok
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-0.5 py-1 md:px-2 md:py-1.5 text-right text-[10px] md:text-xs font-medium">
+                                    <div className="flex flex-col md:flex-row md:justify-end gap-1.5 md:gap-2">
+                                      <button
+                                        onClick={() => handleEdit(phone)}
+                                        className="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded transition-colors"
+                                      >
+                                        Düzenle
+                                      </button>
+                                      <button
+                                        onClick={() => handleDelete(phone.id)}
+                                        className="bg-red-400 hover:bg-red-500 text-white text-xs px-3 py-1 rounded transition-colors"
+                                      >
+                                        Sil
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </tbody>
                       </table>
                     </div>

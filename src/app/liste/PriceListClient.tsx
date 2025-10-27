@@ -266,52 +266,58 @@ export default function PriceListClient() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200">
-                            {phonesByBrand[brand].map((phone, index) => {
-                              const prices = calculatePrices(
-                                phone.cashPrice,
-                                phone.singlePaymentRate,
-                                phone.installmentRate
-                              );
-                              return (
-                                <tr
-                                  key={phone.id}
-                                  className={`hover:bg-red-50 transition-colors ${
-                                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                                  }`}
-                                >
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs text-gray-900 font-medium">
-                                    {phone.model}
-                                  </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5">
-                                    <div className="flex items-center gap-1 flex-wrap">
-                                      {phone.colors.map((color) => (
-                                        <span
-                                          key={color}
-                                          className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
-                                            colorNeedsBorder(color)
-                                              ? "border border-gray-300"
-                                              : ""
-                                          }`}
-                                          style={{
-                                            background: getColorHex(color),
-                                          }}
-                                          title={color}
-                                        ></span>
-                                      ))}
-                                    </div>
-                                  </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-green-800">
-                                    {formatPrice(prices.cash)}
-                                  </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-blue-800">
-                                    {formatPrice(prices.singlePayment)}
-                                  </td>
-                                  <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-purple-800">
-                                    {formatPrice(prices.installment)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                            {phonesByBrand[brand]
+                              .sort((a, b) =>
+                                b.model.localeCompare(a.model, "tr")
+                              )
+                              .map((phone, index) => {
+                                const prices = calculatePrices(
+                                  phone.cashPrice,
+                                  phone.singlePaymentRate,
+                                  phone.installmentRate
+                                );
+                                return (
+                                  <tr
+                                    key={phone.id}
+                                    className={`hover:bg-red-50 transition-colors ${
+                                      index % 2 === 0
+                                        ? "bg-white"
+                                        : "bg-gray-50"
+                                    }`}
+                                  >
+                                    <td className="px-1 py-1 md:px-2 md:py-1.5 text-xs text-gray-900 font-medium">
+                                      {phone.model}
+                                    </td>
+                                    <td className="px-1 py-1 md:px-2 md:py-1.5">
+                                      <div className="flex items-center gap-1 flex-wrap">
+                                        {phone.colors.map((color) => (
+                                          <span
+                                            key={color}
+                                            className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full shrink-0 ${
+                                              colorNeedsBorder(color)
+                                                ? "border border-gray-300"
+                                                : ""
+                                            }`}
+                                            style={{
+                                              background: getColorHex(color),
+                                            }}
+                                            title={color}
+                                          ></span>
+                                        ))}
+                                      </div>
+                                    </td>
+                                    <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-green-800">
+                                      {formatPrice(prices.cash)}
+                                    </td>
+                                    <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-blue-800">
+                                      {formatPrice(prices.singlePayment)}
+                                    </td>
+                                    <td className="px-1 py-1 md:px-2 md:py-1.5 whitespace-nowrap text-right text-xs font-semibold text-purple-800">
+                                      {formatPrice(prices.installment)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                           </tbody>
                         </table>
                       </div>
