@@ -334,8 +334,7 @@ curl "http://localhost:3000/api/heartbeat?token=YOUR_SECRET_TOKEN"
 
 **Proje Sahibi:** Derya İletişim
 
-- **Telefon:** +90 (537) 347 08 88
-- **Email:** info@deryailetisim.com
+- **Telefon:** +90 (507) 263 82 82
 - **Adres:** Şehit Kemal Türkeş Mahallesi, İstanbul Cd. Konaltaş İş Hanı altı no:103/A, 42030 Karatay/Konya
 
 **Geliştirici:** [GitHub Profili](https://github.com/muhammedkisla)

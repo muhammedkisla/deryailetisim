@@ -17,23 +17,8 @@ import { getColorHex, colorNeedsBorder } from "@/lib/colorHelper";
 const bankAccounts = [
   {
     id: 1,
-    bankName: "Ziraat Bankası",
-    iban: "TR33 0001 0000 0000 0000 0000 01",
-  },
-  {
-    id: 2,
-    bankName: "İş Bankası",
-    iban: "TR44 0006 4000 0000 0000 0000 02",
-  },
-  {
-    id: 3,
-    bankName: "Akbank",
-    iban: "TR55 0004 6000 0000 0000 0000 03",
-  },
-  {
-    id: 4,
-    bankName: "Garanti BBVA",
-    iban: "TR66 0006 2000 0000 0000 0000 04",
+    bankName: "Kuveyt Türk",
+    iban: "TR250020500009621365200001",
   },
 ];
 
@@ -459,8 +444,7 @@ export default function PriceListClient() {
                 </div>
                 <div className="text-center mt-1 p-2 bg-red-50 rounded-lg border border-red-200">
                   <p className="text-xs font-semibold text-gray-800">
-                    DERYA İLETİŞİM TEKNOLOJİ ÜRÜNLERİ VE ELEKTRONİK PAZARLAMA
-                    TİC. LTD. ŞTİ
+                    DERYA İNOVASYON
                   </p>
                 </div>
                 <p className="text-center text-xs text-gray-500 mt-2">
@@ -488,7 +472,7 @@ export default function PriceListClient() {
                 </svg>
                 <p>
                   Fiyatlar günlük olarak güncellenebilir. Kesin fiyat için{" "}
-                  <span className="font-semibold">+90 (537) 347 08 88</span>{" "}
+                  <span className="font-semibold">+90 (507) 263 82 82</span>{" "}
                   numaralı telefondan bizi arayabilirsiniz.
                 </p>
               </div>

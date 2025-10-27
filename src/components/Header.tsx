@@ -8,7 +8,7 @@ export default function Header() {
   const [isHidden, setIsHidden] = useState(false);
   const lastYRef = useRef(0);
   const whatsappPhone = (
-    process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905373470888"
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905072638282"
   ).replace(/[^0-9]/g, "");
   const telHref = `tel:+${whatsappPhone}`;
 

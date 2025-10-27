@@ -210,8 +210,7 @@ Projeye Supabase entegre etmek için `SUPABASE_SETUP.md` dosyasındaki adımlar�
 
 Proje ile ilgili sorularınız için:
 
-- Email: info@deryailetisim.com
-- Telefon: +90 (XXX) XXX XX XX
+- Telefon: +90 (507) 263 82 82
 
 ## 📄 Lisans
 

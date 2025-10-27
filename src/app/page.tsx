@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const WHATSAPP_PHONE = (
-  process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905373470888"
+  process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905072638282"
 ).replace(/[^0-9]/g, "");
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}`;
 
@@ -295,41 +295,10 @@ export default function Home() {
                         </h3>
                         <p className="text-gray-600">
                           <a
-                            href="tel:+905373470888"
+                            href="tel:+905072638282"
                             className="hover:text-red-600 transition-colors"
                           >
-                            +90 (537) 347 08 88
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-red-100 p-3 rounded-lg">
-                        <svg
-                          className="w-6 h-6 text-red-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">
-                          E-posta
-                        </h3>
-                        <p className="text-gray-600">
-                          <a
-                            href="mailto:info@deryailetisim.com"
-                            className="hover:text-red-600 transition-colors"
-                          >
-                            info@deryailetisim.com
+                            +90 (507) 263 82 82
                           </a>
                         </p>
                       </div>
