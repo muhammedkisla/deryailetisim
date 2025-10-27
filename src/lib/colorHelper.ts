@@ -19,6 +19,7 @@ export const phoneColors: PhoneColor[] = [
   { name: "Mor", bg: "#9333EA", text: "#FFFFFF" },
   { name: "Yeşil", bg: "#10B981", text: "#FFFFFF" },
   { name: "Kırmızı", bg: "#EF4444", text: "#FFFFFF" },
+  { name: "Turuncu", bg: "#FF6B35", text: "#FFFFFF" },
   { name: "Açık Pembe", bg: "#FFC0CB", text: "#000000", border: true },
   { name: "Titanyum Gri", bg: "#52525B", text: "#FFFFFF" },
   { name: "Titanyum Mavi", bg: "#60A5FA", text: "#FFFFFF" },
